@@ -9,6 +9,7 @@
 #include "MBUtils.h"
 #include "ACTable.h"
 #include "LabJack.h"
+#include <string>
 
 using namespace std;
 
@@ -43,127 +44,51 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
     #endif
       reportEvent("iLabjack: OnNewMail: " + key);
 
-      if(key == "SET_FIO0_STATE")
+      if(key == "SET_FIOX_STATE") //This data contain "FIO=X;VALUE=Y;"
       {
-        reportEvent("iLabjack: Calling eDO to set FIO0 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 0, msg.GetDouble())) != 0 )
+        string strMsg = msg.GetString();
+        int fioToSet = -1;
+        int valueToSet = -1;
+        // 1) parse string message to knwow which FIO to set
+        std::size_t fioStart = strMsg.find("FIO=");
+        std::size_t fioEnd = strMsg.find(";");
+        if (fioStart!=std::string::npos && fioEnd!=std::string::npos)
         {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO0 " + error);
-          closeUSBConnection(hDevice);
+          char buffer[16];
+          std::size_t length = strMsg.copy(buffer,fioEnd-fioStart+4,fioStart+4);
+          buffer[length]='\0';
+          fioToSet = atoi(buffer);
+        }
+        std::size_t valueStart = strMsg.find("VALUE=");
+        if (valueStart!=std::string::npos)
+        {
+          char buffer[16];
+          std::size_t length = strMsg.copy(buffer,1,valueStart+6);
+          buffer[length]='\0';
+          valueToSet = atoi(buffer);
+        }
+MOOSTrace("iLabjack: reading SET_FIOX_STATE variable. value : [%s], extracted FIO number = [%d], extracted FIO value = [%d]\n",msg.GetString().c_str(),fioToSet, valueToSet);
+        if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
+        {
+          reportEvent("iLabjack: Calling eDO to set FIO state");
+          //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
+          if( (error = eDO(hDevice, 1, fioToSet, valueToSet)) != 0 )
+          {
+            reportRunWarning("iLabjack : received an error code calling eDO on FIOX " + error);
+            closeUSBConnection(hDevice);
+          }
+          else
+          {
+            MOOSTrace("iLabjack: FIO%d correctly setted to %d",fioToSet, valueToSet);
+            Notify("FIOX_STATE", msg.GetString());
+          }
         }
         else
         {
-          MOOSTrace("iLabjack: FIO0 correctly setted to %d",msg.GetDouble());
-          Notify("FIO0_STATE", msg.GetDouble());
+          MOOSTrace("iLabjack: Error reading SET_FIOX_STATE variable. value : [%s], extracted FIO number = [%d], extracted FIO value = [%d]",msg.GetString().c_str(),fioToSet, valueToSet);
         }
+      }
 
-      }
-      if(key == "SET_FIO1_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO1 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 1, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO1 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO1 correctly setted to %d",msg.GetDouble());
-          Notify("FIO1_STATE", msg.GetDouble());
-        }
-      }
-      if(key == "SET_FIO2_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO2 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 2, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO2 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO2 correctly setted to %d",msg.GetDouble());
-          Notify("FIO2_STATE", msg.GetDouble());
-        }
-      }
-      if(key == "SET_FIO3_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO3 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 3, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO3 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO3 correctly setted to %d",msg.GetDouble());
-          Notify("FIO3_STATE", msg.GetDouble());
-        }
-      }
-      if(key == "SET_FIO4_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO4 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 4, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO4 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO4 correctly setted to %d",msg.GetDouble());
-          Notify("FIO4_STATE", msg.GetDouble());
-        }
-      }
-      if(key == "SET_FIO5_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO5 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 5, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO5 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO5 correctly setted to %d",msg.GetDouble());
-          Notify("FIO5_STATE", msg.GetDouble());
-        }
-      }
-      if(key == "SET_FIO6_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO6 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 6, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO6 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO6 correctly setted to %d",msg.GetDouble());
-          Notify("FIO6_STATE", msg.GetDouble());
-        }
-      }
-      if(key == "SET_FIO7_STATE")
-      {
-        reportEvent("iLabjack: Calling eDO to set FIO7 state");
-      //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-        if( (error = eDO(hDevice, 1, 7, msg.GetDouble())) != 0 )
-        {
-          reportRunWarning("iLabjack : received an error code calling eDO onFIO7 " + error);
-          closeUSBConnection(hDevice);
-        }
-        else
-        {
-          MOOSTrace("iLabjack: FIO7 correctly setted to %d",msg.GetDouble());
-          Notify("FIO7_STATE", msg.GetDouble());
-        }
-      }
 
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("iLabjack: Unhandled Mail: " + key);
@@ -200,9 +125,11 @@ bool LabJack::Iterate()
     if( (hDevice = openUSBConnection(localID)) == NULL )
     {
       reportRunWarning("iLabjack: Error openning Labjack USB connexion");
-      return 0;
     }
-    reportEvent("iLabjack: Labjack USB re-connexion success");
+    else
+    {
+      reportEvent("iLabjack: Labjack USB re-connexion success");
+    }
   }
 
   AppCastingMOOSApp::PostReport();
@@ -251,7 +178,6 @@ bool LabJack::OnStartUp()
   if( (hDevice = openUSBConnection(localID)) == NULL )
   {
     reportConfigWarning("iLabjack: Error openning Labjack USB connexion");
-    return 0;
   }
 
   //Get calibration information from U3
@@ -260,7 +186,6 @@ bool LabJack::OnStartUp()
     if( error > 0 )
       reportConfigWarning("iLabjack: Received an error code of " + error);
     closeUSBConnection(hDevice);
-    return 0;
   }
 
   registerVariables();
@@ -273,15 +198,7 @@ bool LabJack::OnStartUp()
 void LabJack::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
-  Register("SET_FIO0_STATE", 0);
-  Register("SET_FIO1_STATE", 0);
-  Register("SET_FIO2_STATE", 0);
-  Register("SET_FIO3_STATE", 0);
-  Register("SET_FIO4_STATE", 0);
-  Register("SET_FIO5_STATE", 0);
-  Register("SET_FIO6_STATE", 0);
-  Register("SET_FIO7_STATE", 0);
-  Register("FOO", 0);
+  Register("SET_FIOX_STATE", 0);
   // Register("FOOBAR", 0);
 }
 
