@@ -1,0 +1,8 @@
+//------------------------------------------------
+// iLabJack config block
+
+ProcessConfig = iLabJack
+{
+  AppTick   = 4
+  CommsTick = 4
+}

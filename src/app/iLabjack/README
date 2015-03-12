@@ -1,0 +1,7 @@
+Pour l'instant : 
+
+Re ecriture de u3.c en u3.cpp (j'ai retiré les goto...)
+
+Utilisation des fonctions "easy" pour le controle des labjack U3 pour connexion et utilisation de FIO00.
+
+L'appli s'abonne à FIO0_STATE et met la sortie de la labjack à cette valeur

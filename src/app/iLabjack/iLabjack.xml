@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file contains iLabjack documentation -->
+<?xml-stylesheet href="../../../doc/xmldocumentation.css" type="text/css"?>
+<xmldoc>
+  <moosapp>
+
+     <info>
+        <name>iLabJack</name>
+        <organization>ENSTA Bretagne</organization>
+        <date>2015</date>
+        <authors>
+           <author>Clément Aubry</author>
+        </authors>
+        <licence>MIT</licence>
+     </info>
+
+     <documentation>
+        <synopsis>
+          Interface to Labjack U3 application.
+          This app use exodriver for labjack, install it following http://labjack.com/support/linux-and-mac-os-x-drivers
+          In the example folder of the exodriver archive, you could find subfolders containing example programs for differnet labjacks. For each, you could find u3.h,u3.c (u6.h,u6.c, etc). These c files are an easy interface to use labjacks. Some modifications are needed to use those interfaces in your app.
+
+          copy u3.c, u3.h in the sources folder, rename u3.c iunder u3.cpp and change the code to be C+ compliant (remove goto and labels, I know it seem neird but the original code is very clear).
+          Add u3.cpp (u6.cpp, etc) to SRC list in CMakelist.txt.
+
+          You could modify, extend this app to be more general using easy functions declared in u3.h
+        </synopsis>
+        <interface>
+           <subscriptions>
+              <!--
+              <moosvar>
+                 <varname>EXAMPLE_VAR_IN</varname>
+                 <vartype>string</vartype>
+                 <varinfo>description of the MOOSVar</varinfo>
+              </moosvar>
+              -->
+              <moosvar>
+                 <varname>SET_FIO0_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO0 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO1_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO1 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO2_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO2 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO3_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO3 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO4_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO4 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO5_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO5 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO6_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO6 state.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>SET_FIO7_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>These variable ask the app to change FIO7 state.</varinfo>
+              </moosvar>
+           </subscriptions>
+           <publications>
+              <!--
+              <moosvar>
+                 <varname>EXAMPLE_VAR_OUT</varname>
+                 <vartype>string</vartype>
+                 <varinfo>description of the MOOSVar</varinfo>
+              </moosvar>
+              -->
+           </publications>
+        </interface>
+        <!-- if there is a bug or a special fact to know.. -->
+        <optional-comments>
+           The labjack easy function can connect to any (U3 for the moment) labjack connected to an USB device, no need to specify USB port.
+
+           Support hot-unplugging of labjack, would be re-connected when re-plugged
+        </optional-comments>
+        <!-- if something can be improved -->
+        <suggested-improvements>
+
+        </suggested-improvements>
+     </documentation>
+
+  </moosapp>
+</xmldoc>
