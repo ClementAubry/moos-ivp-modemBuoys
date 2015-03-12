@@ -20,7 +20,7 @@
           This app use exodriver for labjack, install it following http://labjack.com/support/linux-and-mac-os-x-drivers
           In the example folder of the exodriver archive, you could find subfolders containing example programs for differnet labjacks. For each, you could find u3.h,u3.c (u6.h,u6.c, etc). These c files are an easy interface to use labjacks. Some modifications are needed to use those interfaces in your app.
 
-          copy u3.c, u3.h in the sources folder, rename u3.c iunder u3.cpp and change the code to be C+ compliant (remove goto and labels, I know it seem neird but the original code is very clear).
+          copy u3.c, u3.h in the sources folder, rename u3.c under u3.cpp and change the code to be C+ compliant (remove goto and labels, I know it seem neird but the original code is very clear). In cas of any doubts, see the diffs between u3.c from exodriver and u3.cpp from this app.
           Add u3.cpp (u6.cpp, etc) to SRC list in CMakelist.txt.
 
           You could modify, extend this app to be more general using easy functions declared in u3.h
