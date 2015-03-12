@@ -24,6 +24,7 @@ INCLUDE_DIRECTORIES(${LOCAL_LIBRARY_DIRS})
 # 'i' apps
   ADD_SUBDIRECTORY(iRazorIMU)
   ADD_SUBDIRECTORY(iModem)
+  ADD_SUBDIRECTORY(iLabjack)
 
 
 ##############################################################################
