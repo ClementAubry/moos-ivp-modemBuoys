@@ -53,7 +53,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO0 correctly setted to %d",msg.GetDouble());
+          Notify("FIO0_STATE", msg.GetDouble());
+        }
 
       }
       if(key == "SET_FIO1_STATE")
@@ -66,7 +69,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO1 correctly setted to %d",msg.GetDouble());
+          Notify("FIO1_STATE", msg.GetDouble());
+        }
       }
       if(key == "SET_FIO2_STATE")
       {
@@ -78,7 +84,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO2 correctly setted to %d",msg.GetDouble());
+          Notify("FIO2_STATE", msg.GetDouble());
+        }
       }
       if(key == "SET_FIO3_STATE")
       {
@@ -90,7 +99,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO3 correctly setted to %d",msg.GetDouble());
+          Notify("FIO3_STATE", msg.GetDouble());
+        }
       }
       if(key == "SET_FIO4_STATE")
       {
@@ -102,7 +114,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO4 correctly setted to %d",msg.GetDouble());
+          Notify("FIO4_STATE", msg.GetDouble());
+        }
       }
       if(key == "SET_FIO5_STATE")
       {
@@ -114,7 +129,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO5 correctly setted to %d",msg.GetDouble());
+          Notify("FIO5_STATE", msg.GetDouble());
+        }
       }
       if(key == "SET_FIO6_STATE")
       {
@@ -126,7 +144,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO6 correctly setted to %d",msg.GetDouble());
+          Notify("FIO6_STATE", msg.GetDouble());
+        }
       }
       if(key == "SET_FIO7_STATE")
       {
@@ -138,7 +159,10 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           closeUSBConnection(hDevice);
         }
         else
+        {
           MOOSTrace("iLabjack: FIO7 correctly setted to %d",msg.GetDouble());
+          Notify("FIO7_STATE", msg.GetDouble());
+        }
       }
 
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp

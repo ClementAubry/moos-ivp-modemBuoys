@@ -83,6 +83,46 @@
                  <varinfo>description of the MOOSVar</varinfo>
               </moosvar>
               -->
+              <moosvar>
+                 <varname>FIO0_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO0 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO1_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO1 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO2_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO2 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO3_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO3 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO4_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO4 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO5_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO5 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO6_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO6 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
+              <moosvar>
+                 <varname>FIO7_STATE</varname>
+                 <vartype>bool</vartype>
+                 <varinfo>Published when FIO7 has been changed as an acknowledgement.</varinfo>
+              </moosvar>
            </publications>
         </interface>
         <!-- if there is a bug or a special fact to know.. -->
