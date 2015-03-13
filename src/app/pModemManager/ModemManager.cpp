@@ -19,10 +19,40 @@ ModemManager::ModemManager()
 {
   m_uiNbRobots = 0;
 
-
   m_uiTimeoutUS = 0;
   m_sModemPowerOnLabjack = "FIO0";
   m_sMagnetPowerOnLabjack = "FIO1";
+
+  string strMsg = m_sModemPowerOnLabjack;
+  //parse string message to knwow which FIO to set
+  std::size_t fioStart = strMsg.find("FIO");
+  if (fioStart!=std::string::npos)
+  {
+    char buffer[16];
+    std::size_t length = strMsg.copy(buffer,1,fioStart+3);
+    buffer[length]='\0';
+    m_iModemPowerOnLabjack = atoi(buffer);
+  }
+  else
+  {
+    m_iModemPowerOnLabjack = -1;
+    MOOSFail("pModemManager: Error initializating FIO number for modem power management\n");
+  }
+  strMsg = m_sMagnetPowerOnLabjack;
+  //parse string message to knwow which FIO to set
+  fioStart = strMsg.find("FIO");
+  if (fioStart!=std::string::npos)
+  {
+    char buffer[16];
+    std::size_t length = strMsg.copy(buffer,1,fioStart+3);
+    buffer[length]='\0';
+    m_iMagnetPowerOnLabjack = atoi(buffer);
+  }
+  else
+  {
+    m_iMagnetPowerOnLabjack = -1;
+    MOOSFail("pModemManager: Error initializating FIO number for magnet power management\n");
+  }
 
   //Init threads
   if (!m_thread_tempo.Initialise(modem_manager_tempo_thread_func, (void*)this))
@@ -58,28 +88,55 @@ bool ModemManager::OnNewMail(MOOSMSG_LIST &NewMail)
       bool   mdbl  = msg.IsDouble();
       bool   mstr  = msg.IsString();
     #endif
-
-    if(key == "FIO0_STATE")
+    //Replacing FIO0_STATE and FIO1_STATE by FIOX_STATE
+    if(key == "FIOX_STATE")
     {
-      if (m_iInConfigTime == 2)
-        m_iInConfigTime = 3;
-      else if (m_iInConfigTime == 6)
-        m_iInConfigTime = 7;
-      else if (m_iInConfigTime == 12)
-        m_iInConfigTime = 13;
-      else if (m_iInConfigTime == 14)
-        m_iInConfigTime = 15;
-      else
-        MOOSTrace("ModemManager: Error receiving FIO0_STATE acknowledgement, unhandled case\n");
-    }
-    if(key == "FIO1_STATE")
-    {
-      if (m_iInConfigTime == 4)
-        m_iInConfigTime = 5;
-      else if (m_iInConfigTime == 9)
-        m_iInConfigTime = 10;
-      else
-        MOOSTrace("ModemManager: Error receiving FIO1_STATE acknowledgement, unhandled case\n");
+      string strMsg = msg.GetString();
+      int fioToSet = -1;
+      int valueToSet = -1;
+        // 1) parse string message to knwow which FIO to set
+      std::size_t fioStart = strMsg.find("FIO=");
+      std::size_t fioEnd = strMsg.find(";");
+      if (fioStart!=std::string::npos && fioEnd!=std::string::npos)
+      {
+        char buffer[16];
+        std::size_t length = strMsg.copy(buffer,fioEnd-fioStart+4,fioStart+4);
+        buffer[length]='\0';
+        fioToSet = atoi(buffer);
+      }
+      std::size_t valueStart = strMsg.find("VALUE=");
+      if (valueStart!=std::string::npos)
+      {
+        char buffer[16];
+        std::size_t length = strMsg.copy(buffer,1,valueStart+6);
+        buffer[length]='\0';
+        valueToSet = atoi(buffer);
+      }
+      if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
+      {
+        if (fioToSet == m_iModemPowerOnLabjack)
+        {
+          if (m_iInConfigTime == 2)
+            m_iInConfigTime = 3;
+          else if (m_iInConfigTime == 6)
+            m_iInConfigTime = 7;
+          else if (m_iInConfigTime == 12)
+            m_iInConfigTime = 13;
+          else if (m_iInConfigTime == 14)
+            m_iInConfigTime = 15;
+          else
+            MOOSTrace("ModemManager: Error receiving FIOX_STATE acknowledgement, unhandled case\n");
+        }
+        else if  (fioToSet == m_iMagnetPowerOnLabjack)
+        {
+          if (m_iInConfigTime == 4)
+            m_iInConfigTime = 5;
+          else if (m_iInConfigTime == 9)
+            m_iInConfigTime = 10;
+          else
+            MOOSTrace("ModemManager: Error receiving FIOX_STATE acknowledgement, unhandled case\n");
+        }
+      }
     }
     if(key == "MODEM_IS_ALIVE")
     {
@@ -134,7 +191,7 @@ bool ModemManager::Iterate()
         Notify("MODEM_CONFIGURATION_REQUIRED","slave");
         // 2) notify iLabjack to power down modem
         MOOSTrace("ModemManager: Asking iLabjack modem powering down\n");
-        Notify("SET_FIO0_STATE","false");
+        Notify("SET_"+m_sModemPowerOnLabjack+"_STATE",0.0);
         m_iInConfigTime=2;
       break;
       case 2:
@@ -144,7 +201,7 @@ bool ModemManager::Iterate()
         MOOSTrace("ModemManager: Modem powered down aknowledged by iLabjack\n");
         // 3) notify iLabjack to power up magnet
         MOOSTrace("ModemManager: Asking iLabjack magnet powering up\n");
-        Notify("SET_FIO1_STATE","true");
+        Notify("SET_"+m_sMagnetPowerOnLabjack+"_STATE",1.0);
         m_iInConfigTime=4;
       break;
       case 4:
@@ -153,7 +210,7 @@ bool ModemManager::Iterate()
       case 5:
         MOOSTrace("ModemManager: Modem powered off and magnet powered up acknowledged by iLabjack, can power up the modem \n");
         // 4) notify iLabjack to power up modem
-        Notify("SET_FIO0_STATE","true");
+        Notify("SET_"+m_sModemPowerOnLabjack+"_STATE",1.0);
         //We are now waiting iModem to say that modem is alive in order to power down the magnet
         m_iInConfigTime=6;
       break;
@@ -167,7 +224,7 @@ bool ModemManager::Iterate()
       case 8:
         MOOSTrace("ModemManager: Modem is alive, asking iLabjack to power down the magnet\n");
         // 5) iModem has published a MODEM_IS_ALIVE message, notify iLabjack to power down magnet
-        Notify("SET_FIO1_STATE","false");
+        Notify("SET_"+m_sMagnetPowerOnLabjack+"_STATE",0.0);
         m_iInConfigTime=9;
       break;
       case 9:
@@ -180,7 +237,7 @@ bool ModemManager::Iterate()
         // 6) when iModem publish an MODEM_CONFIGURATION_COMPLETE message,
         //     notify iLabjack to power down modem,
         MOOSTrace("ModemManager: Modem Configuration complete, asking iLabjack modem powering down\n");
-        Notify("SET_FIO0_STATE","false");
+        Notify("SET_"+m_sModemPowerOnLabjack+"_STATE",0.0);
         m_iInConfigTime=12;
       break;
       case 12:
@@ -189,7 +246,7 @@ bool ModemManager::Iterate()
       case 13:
         MOOSTrace("ModemManager: Modem powered off acknowledged by iLabjack, can power on the modem\n");
         MOOSPause(500);
-        Notify("SET_FIO0_STATE","true");
+        Notify("SET_"+m_sModemPowerOnLabjack+"_STATE",1.0);
         m_iInConfigTime=14;
       break;
       case 14:
@@ -204,7 +261,6 @@ bool ModemManager::Iterate()
         MOOSTrace("ModemManager: Lost in config mode\n");
     }
   }
-
   AppCastingMOOSApp::PostReport();
   return true;
 }
@@ -235,11 +291,42 @@ bool ModemManager::OnStartUp()
     if(param == "MODEM_LJ_POWER")
     {
       m_sModemPowerOnLabjack = value;
+      string strMsg = m_sModemPowerOnLabjack;
+      //parse string message to knwow which FIO to set
+      std::size_t fioStart = strMsg.find("FIO");
+      if (fioStart!=std::string::npos)
+      {
+        char buffer[16];
+        std::size_t length = strMsg.copy(buffer,1,fioStart+3);
+        buffer[length]='\0';
+        m_iModemPowerOnLabjack = atoi(buffer);
+      }
+      else
+      {
+        m_iModemPowerOnLabjack = -1;
+        MOOSFail("pModemManager: OnStartUp: Error initializating FIO number for modem power management\n");
+      }
+
       handled = true;
     }
     else if(param == "MAGNET_LJ_POWER")
     {
       m_sMagnetPowerOnLabjack = value;
+      string strMsg = m_sMagnetPowerOnLabjack;
+      //parse string message to knwow which FIO to set
+      std::size_t fioStart = strMsg.find("FIO");
+      if (fioStart!=std::string::npos)
+      {
+        char buffer[16];
+        std::size_t length = strMsg.copy(buffer,1,fioStart+3);
+        buffer[length]='\0';
+        m_iMagnetPowerOnLabjack = atoi(buffer);
+      }
+      else
+      {
+        m_iMagnetPowerOnLabjack = -1;
+        MOOSFail("pModemManager: OnStartUp: Error initializating FIO number for magnet power management\n");
+      }
       handled = true;
     }
     else if(param == "MODEM_MGR_NB_ROBOTS")
@@ -264,8 +351,7 @@ void ModemManager::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   // Register("FOOBAR", 0);
-  Register("FIO0_STATE", 0);
-  Register("FIO1_STATE", 0);
+  Register("FIOX_STATE", 0);
   Register("MODEM_IS_ALIVE", 0);
   Register("MODEM_CONFIGURATION_COMPLETE", 0);
 }

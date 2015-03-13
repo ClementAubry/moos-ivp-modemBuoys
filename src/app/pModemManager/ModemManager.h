@@ -34,7 +34,9 @@ class ModemManager : public AppCastingMOOSApp
 
   private: // State variables
     std::string m_sModemPowerOnLabjack;
+    int m_iModemPowerOnLabjack;
     std::string m_sMagnetPowerOnLabjack;
+    int m_iMagnetPowerOnLabjack;
     unsigned int m_uiNbRobots;
 
     bool         m_bCommunicationAndRangingStarted;;
