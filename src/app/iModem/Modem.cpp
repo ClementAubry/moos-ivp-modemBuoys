@@ -247,6 +247,7 @@ void Modem::ListenModemMessages()
                 if (!m_bSentCfg) //mtAlive HeadInf = 0x40 => config has not been sent, have to send mtSendVersion
                 {
                     MOOSTrace("iModem: Modem says by mtAlive that config has not been sent (mtAlive HEadInf.sentCfg = 0) \n");
+                    Notify("MODEM_IS_ALIVE",true);
                 }
                 else if (m_bSentCfg) //mtAlive HeadInf = 0xC0 => have to send first mtErasesector
                 {
