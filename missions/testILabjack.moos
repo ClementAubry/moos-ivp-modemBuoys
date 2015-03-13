@@ -1,0 +1,16 @@
+Community = alpha // le nom de la communauté MOOS
+ServerHost = localhost // l’adresse du serveur
+ServerPort = 9000 // le port de la communauté
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  Run = iLabjack @ NewConsole = true
+  Run = uMS @ NewConsole = false
+}
+
+ProcessConfig = iLabjack
+{
+  AppTick   = 4
+  CommsTick = 4
+}
