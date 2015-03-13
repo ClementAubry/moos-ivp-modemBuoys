@@ -1,5 +1,5 @@
 /************************************************************/
-/*    FILE: LabJack.cpp
+/*    FILE: Labjack.cpp
 /*    ORGN: ENSTA Bretagne
 /*    AUTH: Clément Aubry
 /*    DATE: 2015
@@ -8,7 +8,7 @@
 #include <iterator>
 #include "MBUtils.h"
 #include "ACTable.h"
-#include "LabJack.h"
+#include "Labjack.h"
 #include <string>
 
 using namespace std;
@@ -16,14 +16,14 @@ using namespace std;
 //---------------------------------------------------------
 // Constructor
 
-LabJack::LabJack()
+Labjack::Labjack()
 {
 }
 
 //---------------------------------------------------------
 // Procedure: OnNewMail
 
-bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
+bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
 {
   AppCastingMOOSApp::OnNewMail(NewMail);
 
@@ -105,7 +105,7 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
 //---------------------------------------------------------
 // Procedure: OnConnectToServer
 
-bool LabJack::OnConnectToServer()
+bool Labjack::OnConnectToServer()
 {
   registerVariables();
   return true;
@@ -115,7 +115,7 @@ bool LabJack::OnConnectToServer()
 // Procedure: Iterate()
 //            happens AppTick times per second
 
-bool LabJack::Iterate()
+bool Labjack::Iterate()
 {
   AppCastingMOOSApp::Iterate();
 
@@ -145,7 +145,7 @@ bool LabJack::Iterate()
 // Procedure: OnStartUp()
 //            happens before connection is open
 
-bool LabJack::OnStartUp()
+bool Labjack::OnStartUp()
 {
   AppCastingMOOSApp::OnStartUp();
 
@@ -200,7 +200,7 @@ bool LabJack::OnStartUp()
 //---------------------------------------------------------
 // Procedure: registerVariables
 
-void LabJack::registerVariables()
+void Labjack::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   Register("SET_FIOX_STATE", 0);
@@ -210,7 +210,7 @@ void LabJack::registerVariables()
 //------------------------------------------------------------
 // Procedure: buildReport()
 
-bool LabJack::buildReport()
+bool Labjack::buildReport()
 {
   #if 0 // Keep these around just for template
     m_msgs << "============================================ \n";

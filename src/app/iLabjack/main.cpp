@@ -9,7 +9,7 @@
 #include "MBUtils.h"
 #include "documentation/MOOSAppDocumentation.h"
 #include "ColorParse.h"
-#include "LabJack.h"
+#include "Labjack.h"
 
 using namespace std;
 
@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
   cout << "uJoystick launching as " << run_command << endl;
   cout << termColor() << endl;
 
-  LabJack LabJack;
+  Labjack Labjack;
 
-  LabJack.Run(run_command.c_str(), mission_file.c_str());
+  Labjack.Run(run_command.c_str(), mission_file.c_str());
 
   return(0);
 }

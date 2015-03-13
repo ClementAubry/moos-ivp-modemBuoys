@@ -5,14 +5,14 @@
 #--------------------------------------------------------
 
 SET(SRC
-  LabJack.cpp
+  Labjack.cpp
   u3.cpp
   main.cpp
 )
 
-ADD_EXECUTABLE(iLabJack ${SRC})
+ADD_EXECUTABLE(iLabjack ${SRC})
 
-TARGET_LINK_LIBRARIES(iLabJack
+TARGET_LINK_LIBRARIES(iLabjack
    ${MOOS_LIBRARIES}
    ensta-documentation
    apputil

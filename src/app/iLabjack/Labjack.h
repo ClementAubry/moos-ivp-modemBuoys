@@ -1,21 +1,21 @@
 /************************************************************/
-/*    FILE: LabJack.h
+/*    FILE: Labjack.h
 /*    ORGN: ENSTA Bretagne
 /*    AUTH: Clément Aubry
 /*    DATE: 2015
 /************************************************************/
 
-#ifndef LabJack_HEADER
-#define LabJack_HEADER
+#ifndef Labjack_HEADER
+#define Labjack_HEADER
 
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
 #include "u3.h"
 
-class LabJack : public AppCastingMOOSApp
+class Labjack : public AppCastingMOOSApp
 {
   public:
-    LabJack();
-    ~LabJack() {};
+    Labjack();
+    ~Labjack() {};
 
   protected: // Standard MOOSApp functions to overload
     bool OnNewMail(MOOSMSG_LIST &NewMail);
@@ -27,7 +27,7 @@ class LabJack : public AppCastingMOOSApp
     bool buildReport();
     void registerVariables();
 
-  protected: // LabJack functions
+  protected: // Labjack functions
 
 
   private: // Configuration variables
