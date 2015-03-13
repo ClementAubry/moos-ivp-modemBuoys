@@ -7,7 +7,7 @@ ProcessConfig = ANTLER
   Run = MOOSDB  @ NewConsole = false
   Run = iModem @ NewConsole = true
   Run = iLabjack @ NewConsole = true
-  Run = pModemManager @ NewConsole = true
+  //Run = pModemManager @ NewConsole = true
   Run = uMS @ NewConsole = false
 }
 
