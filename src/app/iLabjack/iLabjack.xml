@@ -35,45 +35,11 @@
               </moosvar>
               -->
               <moosvar>
-                 <varname>SET_FIO0_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO0 state.</varinfo>
+                 <varname>SET_FIOX_STATE</varname>
+                 <vartype>string</vartype>
+                 <varinfo>These variable ask the app to change FIOX state. The string had to be formatted as : "FIO=x;VALUE=y;" with x the number of the FIO output and y the value</varinfo>
               </moosvar>
-              <moosvar>
-                 <varname>SET_FIO1_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO1 state.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>SET_FIO2_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO2 state.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>SET_FIO3_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO3 state.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>SET_FIO4_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO4 state.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>SET_FIO5_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO5 state.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>SET_FIO6_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO6 state.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>SET_FIO7_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>These variable ask the app to change FIO7 state.</varinfo>
-              </moosvar>
+
            </subscriptions>
            <publications>
               <!--
@@ -84,45 +50,11 @@
               </moosvar>
               -->
               <moosvar>
-                 <varname>FIO0_STATE</varname>
+                 <varname>FIOX_STATE</varname>
                  <vartype>bool</vartype>
-                 <varinfo>Published when FIO0 has been changed as an acknowledgement.</varinfo>
+                 <varinfo>Published when FIOX has been changed as an acknowledgement. This data is a copy of previously received "FIO=x;VALUE=y;"</varinfo>
               </moosvar>
-              <moosvar>
-                 <varname>FIO1_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO1 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>FIO2_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO2 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>FIO3_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO3 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>FIO4_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO4 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>FIO5_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO5 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>FIO6_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO6 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
-              <moosvar>
-                 <varname>FIO7_STATE</varname>
-                 <vartype>bool</vartype>
-                 <varinfo>Published when FIO7 has been changed as an acknowledgement.</varinfo>
-              </moosvar>
+
            </publications>
         </interface>
         <!-- if there is a bug or a special fact to know.. -->
