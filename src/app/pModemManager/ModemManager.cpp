@@ -18,6 +18,7 @@ using namespace std;
 ModemManager::ModemManager()
 {
   m_uiNbRobots = 0;
+  m_iInConfigTime = 0;
 
   m_uiTimeoutUS = 0;
   m_sModemPowerOnLabjack = "FIO0";
@@ -53,7 +54,6 @@ ModemManager::ModemManager()
     m_iMagnetPowerOnLabjack = -1;
     MOOSFail("pModemManager: Error initializating FIO number for magnet power management\n");
   }
-
   //Init threads
   if (!m_thread_tempo.Initialise(modem_manager_tempo_thread_func, (void*)this))
       MOOSFail("pModemManager: Error initializating tempo thread function...\n");
