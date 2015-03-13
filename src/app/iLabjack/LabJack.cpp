@@ -67,10 +67,11 @@ bool LabJack::OnNewMail(MOOSMSG_LIST &NewMail)
           buffer[length]='\0';
           valueToSet = atoi(buffer);
         }
-MOOSTrace("iLabjack: reading SET_FIOX_STATE variable. value : [%s], extracted FIO number = [%d], extracted FIO value = [%d]\n",msg.GetString().c_str(),fioToSet, valueToSet);
         if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
         {
-          reportEvent("iLabjack: Calling eDO to set FIO state");
+          char buffer[200];
+          sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, valueToSet);
+          reportRunWarning(buffer);
           //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
           if( (error = eDO(hDevice, 1, fioToSet, valueToSet)) != 0 )
           {
@@ -79,13 +80,17 @@ MOOSTrace("iLabjack: reading SET_FIOX_STATE variable. value : [%s], extracted FI
           }
           else
           {
-            MOOSTrace("iLabjack: FIO%d correctly setted to %d",fioToSet, valueToSet);
+            char buffer[200];
+            sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, valueToSet);
+            reportRunWarning(buffer);
             Notify("FIOX_STATE", msg.GetString());
           }
         }
         else
         {
-          MOOSTrace("iLabjack: Error reading SET_FIOX_STATE variable. value : [%s], extracted FIO number = [%d], extracted FIO value = [%d]",msg.GetString().c_str(),fioToSet, valueToSet);
+          char buffer[200];
+          sprintf (buffer, "iLabjack: Error reading SET_FIOX_STATE variable. value : [%s], extracted FIO number = [%d], extracted FIO value = [%d]",msg.GetString().c_str(),fioToSet, valueToSet);
+          reportRunWarning(buffer);
         }
       }
 
