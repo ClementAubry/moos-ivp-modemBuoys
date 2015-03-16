@@ -156,7 +156,7 @@ bool Modem::Iterate()
             m_Port.Close();
             MOOSTrace("iModem: Configuring %s serial port at baud rate %d\n", m_portName.c_str(),m_baudrate_comm);
             bool portOpened = m_Port.Configure(params);
-            MOOSTrace("iModem: Configured\n");
+            MOOSTrace("iModem: Serial port configured\n");
             //m_Port.SetTermCharacter('\n');
             m_Port.Flush();
             MOOSPause(1000);
@@ -324,15 +324,9 @@ void Modem::ListenModemMessages()
                     SendModemConfigurationMessage(msg_ReBoot);
                     MOOSTrace("iModem: GRRRR Sending mtReBoot : ");
                     msg_ReBoot.print_hex(200);
-                    m_bModemConfigurationRequired = false;
-                }
-                else if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && !m_bSentCfg)
-                {
-                    //Config has been done
-                    MOOSTrace("iModem: Configuration done.\n");
-                    m_bModemConfiguratonComplete = true;
-                    m_bModemConfigurationRequired = false;
                     Notify("MODEM_CONFIGURATION_COMPLETE", true);
+                    m_bModemConfigurationRequired = false;
+                    m_bModemConfiguratonComplete = true;
                 }
                 else if(!m_bGetVersionData && m_uiTimeoutUS == 0)
                 {
