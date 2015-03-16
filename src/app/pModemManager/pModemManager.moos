@@ -1,0 +1,20 @@
+//------------------------------------------------
+// pModemManager config block
+
+ProcessConfig = pModemManager
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  MODEM_LJ_POWER = FIO0
+  MAGNET_LJ_POWER = FIO4
+
+  //Number of robots in the swarm
+  MODEM_MGR_NB_ROBOTS = 3
+
+  //Times in ms
+  MODEM_MGR_CONFING_TIME     = 1000 //This time is non determinist for the moment, experiment will help
+  MODEM_MGR_RANGING_TIME     = 1500 //1.5s = 750m ranging, modem are 500m capable
+  MODEM_MGR_COMM_TIME        = 1000 //This time is non determinist for the moment, experiment will help
+  MODEM_MGR_BROADCAST_TIME   = 1000 //This time is non determinist for the moment, experiment will help
+}

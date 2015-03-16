@@ -1,22 +1,20 @@
 #--------------------------------------------------------
-# The CMakeLists.txt for: iLabJack
+# The CMakeLists.txt for: pModemManager
 # ENSTA Bretagne
 # Author(s): Clément Aubry
 #--------------------------------------------------------
 
 SET(SRC
-  Labjack.cpp
-  u3.cpp
+  ModemManager.cpp
   main.cpp
 )
 
-ADD_EXECUTABLE(iLabjack ${SRC})
+ADD_EXECUTABLE(pModemManager ${SRC})
 
-TARGET_LINK_LIBRARIES(iLabjack
+TARGET_LINK_LIBRARIES(pModemManager
    ${MOOS_LIBRARIES}
    ensta-documentation
    apputil
    mbutil
    m
-   pthread
-   labjackusb)
+   pthread)

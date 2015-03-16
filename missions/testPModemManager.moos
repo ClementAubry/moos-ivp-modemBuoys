@@ -1,0 +1,46 @@
+Community = alpha // le nom de la communauté MOOS
+ServerHost = localhost // l’adresse du serveur
+ServerPort = 9000 // le port de la communauté
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  Run = iModem @ NewConsole = true
+  Run = iLabjack @ NewConsole = true
+  //Run = pModemManager @ NewConsole = true
+  Run = uMS @ NewConsole = false
+}
+
+ProcessConfig = pModemManager
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  MODEM_LJ_POWER = FIO0
+  MAGNET_LJ_POWER = FIO4
+
+  //Number of robots in the swarm
+  MODEM_MGR_NB_ROBOTS = 3
+
+  //Times in ms
+  MODEM_MGR_CONFING_TIME     = 1000 //This time is non determinist for the moment, experiment will help
+  MODEM_MGR_RANGING_TIME     = 1500 //1.5s = 750m ranging, modem are 500m capable
+  MODEM_MGR_COMM_TIME        = 1000 //This time is non determinist for the moment, experiment will help
+  MODEM_MGR_BROADCAST_TIME   = 1000 //This time is non determinist for the moment, experiment will help
+}
+
+ProcessConfig = iModem
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  SERIAL_PORT_NAME = /dev/ttyUSB0
+  BAUD_RATE_CONF = 57600
+  BAUD_RATE_COMM = 9600
+}
+
+ProcessConfig = iLabjack
+{
+  AppTick   = 4
+  CommsTick = 4
+}
