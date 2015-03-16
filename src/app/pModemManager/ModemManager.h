@@ -44,6 +44,7 @@ class ModemManager : public AppCastingMOOSApp
     unsigned int m_uiTimeoutUS;
 
     int m_iInConfigTime;
+    std::string m_sModemRoleRequired;
 
   private: // ModemManager functions
     //Thread created for timeouts, probably not the right way to do but it works like a charm

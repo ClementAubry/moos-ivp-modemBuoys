@@ -24,6 +24,10 @@ ModemManager::ModemManager()
   m_sModemPowerOnLabjack = "FIO0";
   m_sMagnetPowerOnLabjack = "FIO1";
 
+  m_sModemRoleRequired = "slave";
+
+  m_bCommunicationAndRangingStarted = true;
+
   string strMsg = m_sModemPowerOnLabjack;
   //parse string message to knwow which FIO to set
   std::size_t fioStart = strMsg.find("FIO");
@@ -159,6 +163,7 @@ bool ModemManager::OnNewMail(MOOSMSG_LIST &NewMail)
     else if(key == "MODEM_MGR_CONFIG_ASK")
     {
       m_iInConfigTime = 1;
+      m_sModemRoleRequired = msg.GetString();
       MOOSTrace("ModemManager: Modem Config process asked (debug purposeonly)\n");
     }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
@@ -196,7 +201,7 @@ bool ModemManager::Iterate()
         Notify("MODEM_MGR_START_CONFIG_TIME", MOOSTime());
         // 1) notify iModem to configure modem
         MOOSTrace("ModemManager: Asking iModem Configuration\n");
-        Notify("MODEM_CONFIGURATION_REQUIRED","master");
+        Notify("MODEM_CONFIGURATION_REQUIRED",m_sModemRoleRequired);
         // 2) notify iLabjack to power down modem
         MOOSTrace("ModemManager: Asking iLabjack modem powering down\n");
         sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 0);
@@ -258,7 +263,7 @@ bool ModemManager::Iterate()
       break;
       case 13:
         MOOSTrace("ModemManager: Modem powered off acknowledged by iLabjack, can power on the modem\n");
-        MOOSPause(1500);
+        MOOSPause(3000);
         sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 1);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=14;
