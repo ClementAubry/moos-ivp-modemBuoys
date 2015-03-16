@@ -136,10 +136,8 @@ class SeaNetMsg_ProgBlock : public SeaNetMsg
 {
 public:
   SeaNetMsg_ProgBlock(const char & destinationNode, const char & blockNum,const std::string &payload) : SeaNetMsg(destinationNode) {
-    // const char msg[] = {0x40,0x30,0x30,0x38,0x41,0x8A,0x00,0xFF,m_destinationNode,0x85,0x15,0x80,m_destinationNode,0x00,0x03, payload ,0x0A};
     //On construit le header
     const char msg[] = {0x40,0x30,0x30,0x38,0x41,0x8A,0x00,0xFF,m_destinationNode,0x85,0x15,0x80,m_destinationNode,blockNum,0x03};
-    // m_data.reserve(sizeof(msg)+sizeof(payload)+1);
     m_data.assign(msg, sizeof(msg));
     //On ajoute le payload
     m_data.append(payload);

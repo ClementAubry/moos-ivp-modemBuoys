@@ -297,98 +297,110 @@ void Modem::ListenModemMessages()
                 }
             }
             sBuf.erase(0,msg_size);
-        }
-        /*
-        * Tritech Micron Data Modem configuration Process (see CompteRenduModemTritech.pdf)
-        *  1) Modem will sent mtAlive messages every seconds with headInf bit = 0x40
-        *  2) Send mtSendVersion
-        *  3) Receive mtVersionData
-        *  4) Send mtSendBBUser
-        *  5) Receive mtBBUserData //see CompteRenduModemTritech.pdf, this reception contain Modem Configuration
-        *  6) Receive mtFpgaVersionData
-        *  7) Modem will sent mtAlive messages every seconds with headInf bit = = 0xc0
-        *  8) Send mtEraseSector
-        *  9) Receive mtPgrAck
-        * 10) Send first mtProgBlock //see CompteRenduModemTritech.pdf, this progBlock contain Modem Configuration (with point 5 datas))
-        * 11) Receive mtPgrAck
-        * 12) Send second mtProgBlock
-        * 13) Receive mtPgrAck
-        * 14) Send mtReBoot
-        */
-        if (m_bIsAlive && !m_bModemConfiguratonComplete)
-        {
-            if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && m_bSentCfg)
+            //Rightafter receiving mtMessage, answer to configure Modem
+            /*
+            * Tritech Micron Data Modem configuration Process (see CompteRenduModemTritech.pdf)
+            *  1) Modem will sent mtAlive messages every seconds with headInf bit = 0x40
+            *  2) Send mtSendVersion
+            *  3) Receive mtVersionData
+            *  4) Send mtSendBBUser
+            *  5) Receive mtBBUserData //see CompteRenduModemTritech.pdf, this reception contain Modem Configuration
+            *  6) Receive mtFpgaVersionData
+            *  7) Modem will sent mtAlive messages every seconds with headInf bit = = 0xc0
+            *  8) Send mtEraseSector
+            *  9) Receive mtPgrAck
+            * 10) Send first mtProgBlock //see CompteRenduModemTritech.pdf, this progBlock contain Modem Configuration (with point 5 datas))
+            * 11) Receive mtPgrAck
+            * 12) Send second mtProgBlock
+            * 13) Receive mtPgrAck
+            * 14) Send mtReBoot
+            */
+            if (m_bIsAlive && !m_bModemConfiguratonComplete)
             {
-                //Config has been done
-                MOOSTrace("iModem: Configuration done.\n");
-                m_bModemConfiguratonComplete = true;
-                m_bModemConfigurationRequired = false;
-                Notify("MODEM_CONFIGURATION_COMPLETE", true);
-            }
-            if(!m_bGetVersionData && m_uiTimeoutUS == 0)
-            {
-                //Send mtSendVersion
-                SeaNetMsg_SendVersion msg_SendVersion(m_modemNodeAddr);
-                SendModemConfigurationMessage(msg_SendVersion);
-                MOOSTrace("iModem: Sending mtSendVersion : ");
-                msg_SendVersion.print_hex(200);
-                m_uiTimeoutUS = 600;
-                m_serial_thread_tempo.Start();
-            }
-            else if(m_bGetVersionData && !m_bGetBBUserData && m_uiTimeoutUS == 0)
-            {
-                //Send mtSendBBUser
-                SeaNetMsg_SendBBUser msg_SendBBUser(m_modemNodeAddr);
-                SendModemConfigurationMessage(msg_SendBBUser);
-                MOOSTrace("iModem: Sending mtSendBBUser : ");
-                msg_SendBBUser.print_hex(200);
-                m_uiTimeoutUS = 600;
-                m_serial_thread_tempo.Start();
-            }
-            else if(m_bGetVersionData && m_bGetBBUserData &&
-                    m_bGetFpgaVersionData && m_bSentCfg &&
-                    !m_bGetFirstPgrAck && m_uiTimeoutUS == 0)
-            {
-                //Send mtEraseSector
-                SeaNetMsg_EraseSector msg_EraseSector(m_modemNodeAddr, 0x06, 0x00);
-                SendModemConfigurationMessage(msg_EraseSector);
-                MOOSTrace("iModem: Sending mtEraseSector : ");
-                msg_EraseSector.print_hex(200);
-                m_uiTimeoutUS = 3000;
-                m_serial_thread_tempo.Start();//A timeout of 3 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
-            }
-            else if(m_bGetFirstPgrAck && !m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
-            {
-                //Send first mtProgBlock
-                string configMsg(m_BBUserData);
-                // configMsg.append(m_BBUserData);
-                SeaNetMsg_ProgBlock msg_ProgBlock(m_modemNodeAddr, 0x00, configMsg);
-                SendModemConfigurationMessage(msg_ProgBlock);
-                MOOSTrace("iModem: Sending first mtProgBlock : ");
-                msg_ProgBlock.print_hex(300);
-                m_uiTimeoutUS = 2000;
-                m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
-            }
-            else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
-            {
-                //Send second mtProgBlock
-                string configMsg;
-                configMsg.append(128, 0x00);
-                SeaNetMsg_ProgBlock msg_ProgBlock(m_modemNodeAddr, 0x01, configMsg);
-                SendModemConfigurationMessage(msg_ProgBlock);
-                MOOSTrace("iModem: Sending second mtProgBlock : ");
-                msg_ProgBlock.print_hex(300);
-                m_uiTimeoutUS = 2000;
-                m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
-            }
-            else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && m_bGetThirdPgrAck && !m_bModemConfiguratonComplete)
-            {
-                //Send mtReBoot
-                SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
-                SendModemConfigurationMessage(msg_ReBoot);
-                MOOSTrace("iModem: Sending mtReBoot : ");
-                msg_ReBoot.print_hex(200);
-                m_bMtReBootHasBeenSent = true;
+                if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && m_bSentCfg)
+                {
+                    //Send mtReBoot
+                    SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
+                    SendModemConfigurationMessage(msg_ReBoot);
+                    MOOSTrace("iModem: GRRRR Sending mtReBoot : ");
+                    msg_ReBoot.print_hex(200);
+                    m_bModemConfigurationRequired = false;
+                }
+                else if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && !m_bSentCfg)
+                {
+                    //Config has been done
+                    MOOSTrace("iModem: Configuration done.\n");
+                    m_bModemConfiguratonComplete = true;
+                    m_bModemConfigurationRequired = false;
+                    Notify("MODEM_CONFIGURATION_COMPLETE", true);
+                }
+                else if(!m_bGetVersionData && m_uiTimeoutUS == 0)
+                {
+                    //Send mtSendVersion
+                    SeaNetMsg_SendVersion msg_SendVersion(m_modemNodeAddr);
+                    SendModemConfigurationMessage(msg_SendVersion);
+                    MOOSTrace("iModem: Sending mtSendVersion : ");
+                    msg_SendVersion.print_hex(200);
+                    m_uiTimeoutUS = 600;
+                    m_serial_thread_tempo.Start();
+                }
+                else if(m_bGetVersionData && !m_bGetBBUserData && m_uiTimeoutUS == 0)
+                {
+                    //Send mtSendBBUser
+                    SeaNetMsg_SendBBUser msg_SendBBUser(m_modemNodeAddr);
+                    SendModemConfigurationMessage(msg_SendBBUser);
+                    MOOSTrace("iModem: Sending mtSendBBUser : ");
+                    msg_SendBBUser.print_hex(200);
+                    m_uiTimeoutUS = 600;
+                    m_serial_thread_tempo.Start();
+                }
+                else if(m_bGetVersionData && m_bGetBBUserData &&
+                        m_bGetFpgaVersionData && m_bSentCfg &&
+                        !m_bGetFirstPgrAck && m_uiTimeoutUS == 0)
+                {
+                    //Send mtEraseSector
+                    SeaNetMsg_EraseSector msg_EraseSector(m_modemNodeAddr, 0x06, 0x00);
+                    SendModemConfigurationMessage(msg_EraseSector);
+                    MOOSTrace("iModem: Sending mtEraseSector : ");
+                    msg_EraseSector.print_hex(200);
+                    m_uiTimeoutUS = 3000;
+                    m_serial_thread_tempo.Start();//A timeout of 3 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
+                }
+                else if(m_bGetFirstPgrAck && !m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
+                {
+                    //Send first mtProgBlock
+                    string configMsg(m_BBUserData);
+                    // configMsg.append(m_BBUserData);
+                    SeaNetMsg_ProgBlock msg_ProgBlock(m_modemNodeAddr, 0x00, configMsg);
+                    // SeaNetMsg_FirstProgBlockM504503 msg_ProgBlock(m_modemNodeAddr, 0x00);
+                    // SeaNetMsg_FirstProgBlockM396301 msg_ProgBlock(m_modemNodeAddr, 0x00);
+                    SendModemConfigurationMessage(msg_ProgBlock);
+                    MOOSTrace("iModem: Sending first mtProgBlock : ");
+                    msg_ProgBlock.print_hex(300);
+                    m_uiTimeoutUS = 2000;
+                    m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
+                }
+                else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
+                {
+                    //Send second mtProgBlock
+                    string configMsg;
+                    configMsg.append(128, 0x00);
+                    SeaNetMsg_ProgBlock msg_ProgBlock(m_modemNodeAddr, 0x01, configMsg);
+                    SendModemConfigurationMessage(msg_ProgBlock);
+                    MOOSTrace("iModem: Sending second mtProgBlock : ");
+                    msg_ProgBlock.print_hex(300);
+                    m_uiTimeoutUS = 2000;
+                    m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
+                }
+                else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && m_bGetThirdPgrAck && !m_bModemConfiguratonComplete)
+                {
+                    //Send mtReBoot
+                    SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
+                    SendModemConfigurationMessage(msg_ReBoot);
+                    MOOSTrace("iModem: Sending mtReBoot : ");
+                    msg_ReBoot.print_hex(200);
+                    m_bMtReBootHasBeenSent = true;
+                }
             }
         }
         else if(m_bModemConfiguratonComplete)
