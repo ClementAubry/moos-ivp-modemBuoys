@@ -258,7 +258,7 @@ bool ModemManager::Iterate()
       break;
       case 13:
         MOOSTrace("ModemManager: Modem powered off acknowledged by iLabjack, can power on the modem\n");
-        MOOSPause(500);
+        MOOSPause(1500);
         sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 1);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=14;
