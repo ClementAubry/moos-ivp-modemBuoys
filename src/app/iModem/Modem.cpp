@@ -268,7 +268,7 @@ void Modem::ListenModemMessages()
                 string modemRoleRequired = (m_iModemRoleRequired)?"slave":"master";
                 MOOSTrace("iModem: Modem is currently set to %s\n",modemRole.c_str());
                 MOOSTrace("iModem: Modem configuration required as %s\n",modemRoleRequired.c_str());
-                m_BBUserData.at(49) = m_iModemRoleRequired;
+                m_BBUserData.at(49) = (m_iModemRoleRequired)?0x01:0x00;
                 MOOSTrace("iModem: Modem will now send mtFpgaVersionData\n");
             }
             else if (snmsg.messageType() == SeaNetMsg::mtFpgaVersionData)
@@ -315,6 +315,8 @@ void Modem::ListenModemMessages()
             * 13) Receive mtPgrAck
             * 14) Send mtReBoot
             */
+            //Take a breath before talking
+            MOOSPause(100);
             if (m_bIsAlive && !m_bModemConfiguratonComplete)
             {
                 if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && m_bSentCfg)
@@ -322,11 +324,25 @@ void Modem::ListenModemMessages()
                     //Send mtReBoot
                     SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
                     SendModemConfigurationMessage(msg_ReBoot);
-                    MOOSTrace("iModem: GRRRR Sending mtReBoot : ");
+                    MOOSTrace("iModem: Sending mtReBoot : ");
                     msg_ReBoot.print_hex(200);
+                    SeaNetMsg_ReBoot msg_ReBootGlobal(0xff);
+                    SendModemConfigurationMessage(msg_ReBootGlobal);
+                    MOOSTrace("iModem: Sending mtReBoot Global : ");
+                    msg_ReBootGlobal.print_hex(200);
+
                     Notify("MODEM_CONFIGURATION_COMPLETE", true);
+
                     m_bModemConfigurationRequired = false;
-                    m_bModemConfiguratonComplete = true;
+                    m_bIsAlive = false;
+                    m_bSentCfg = false;
+                    m_bGetVersionData = false;
+                    m_bGetBBUserData = false;
+                    m_bGetFpgaVersionData = false;
+                    m_bGetFirstPgrAck = false;
+                    m_bGetSecondPgrAck = false;
+                    m_bGetThirdPgrAck = false;
+                    m_bModemConfiguratonComplete = false;
                 }
                 else if(!m_bGetVersionData && m_uiTimeoutUS == 0)
                 {
@@ -363,12 +379,9 @@ void Modem::ListenModemMessages()
                 else if(m_bGetFirstPgrAck && !m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
                 {
                     //Send first mtProgBlock
-                    string configMsg(m_BBUserData);
-                    // configMsg.append(m_BBUserData);
-                    SeaNetMsg_ProgBlock msg_ProgBlock(m_modemNodeAddr, 0x00, configMsg);
-                    // SeaNetMsg_FirstProgBlockM504503 msg_ProgBlock(m_modemNodeAddr, 0x00);
-                    // SeaNetMsg_FirstProgBlockM396301 msg_ProgBlock(m_modemNodeAddr, 0x00);
-                    SendModemConfigurationMessage(msg_ProgBlock);
+                    char ttt = (m_iModemRoleRequired)?0x01:0x00;
+                    SeaNetMsg_FirstProgBlock msg_ProgBlock(m_modemNodeAddr, 0x00, ttt);
+                  SendModemConfigurationMessage(msg_ProgBlock);
                     MOOSTrace("iModem: Sending first mtProgBlock : ");
                     msg_ProgBlock.print_hex(300);
                     m_uiTimeoutUS = 2000;
@@ -379,7 +392,7 @@ void Modem::ListenModemMessages()
                     //Send second mtProgBlock
                     string configMsg;
                     configMsg.append(128, 0x00);
-                    SeaNetMsg_ProgBlock msg_ProgBlock(m_modemNodeAddr, 0x01, configMsg);
+                    SeaNetMsg_SecondProgBlock msg_ProgBlock(m_modemNodeAddr, 0x01);
                     SendModemConfigurationMessage(msg_ProgBlock);
                     MOOSTrace("iModem: Sending second mtProgBlock : ");
                     msg_ProgBlock.print_hex(300);
@@ -393,6 +406,10 @@ void Modem::ListenModemMessages()
                     SendModemConfigurationMessage(msg_ReBoot);
                     MOOSTrace("iModem: Sending mtReBoot : ");
                     msg_ReBoot.print_hex(200);
+                    SeaNetMsg_ReBoot msg_ReBootGlobal(0xff);
+                    SendModemConfigurationMessage(msg_ReBootGlobal);
+                    MOOSTrace("iModem: Sending mtReBoot Global : ");
+                    msg_ReBootGlobal.print_hex(200);
                     m_bMtReBootHasBeenSent = true;
                 }
             }
