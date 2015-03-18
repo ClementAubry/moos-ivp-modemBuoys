@@ -1,11 +1,11 @@
 //------------------------------------------------
-// iModem config block
+// iModemInterface config block
 
 Comunity = #1
 ServerHost=localhost
 ServerPort = 9000
 
-ProcessConfig = iModem
+ProcessConfig = iModemInterface
 {
 	AppTick   = 4
 	CommsTick = 4

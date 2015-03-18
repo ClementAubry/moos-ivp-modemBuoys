@@ -2,7 +2,7 @@
 #include "MBUtils.h"
 #include "documentation/MOOSAppDocumentation.h"
 #include "ColorParse.h"
-#include "Modem.h"
+#include "ModemInterface.h"
 
 using namespace std;
 
@@ -34,12 +34,12 @@ int main(int argc, char *argv[])
     documentation.showHelpAndExit();
 
   cout << termColor("green");
-  cout << "iModem launching as " << run_command << endl;
+  cout << "iModemInterface launching as " << run_command << endl;
   cout << termColor() << endl;
 
-  Modem Modem;
+  ModemInterface ModemInterface;
 
-  Modem.Run(run_command.c_str(), mission_file.c_str());
+  ModemInterface.Run(run_command.c_str(), mission_file.c_str());
 
   return(0);
 }

@@ -1,5 +1,5 @@
-#ifndef Modem_HEADER
-#define Modem_HEADER
+#ifndef ModemInterface_HEADER
+#define ModemInterface_HEADER
 
 #include "seanetmsg.h"
 
@@ -10,11 +10,11 @@
 
 #define MESSAGE_MAX_LENGTH 4
 
-class Modem : public CMOOSInstrument
+class ModemInterface : public CMOOSInstrument
 {
 public:
-	Modem();
-	~Modem();
+	ModemInterface();
+	~ModemInterface();
 
 protected:
 	bool OnNewMail(MOOSMSG_LIST &NewMail);
@@ -63,7 +63,7 @@ protected:
 	CMOOSThread 	m_serial_thread_conf;
 	static bool listen_Modem_config_thread_func(void *pModemObject)
 	{
-		Modem* pModem = static_cast<Modem*> (pModemObject);
+		ModemInterface* pModem = static_cast<ModemInterface*> (pModemObject);
 		if (pModem)
 		{
 			std::cout<<"Configuration thread launched, listenning on serial port for conf process"<<std::endl;
@@ -77,7 +77,7 @@ protected:
 	CMOOSThread 	m_serial_thread_tempo;
 	static bool listen_Modem_tempo_thread_func(void *pModemObject)
 	{
-		Modem* pModem = static_cast<Modem*> (pModemObject);
+		ModemInterface* pModem = static_cast<ModemInterface*> (pModemObject);
 		if (pModem)
 		{
 			std::cout<<"Timeout configuration thread launched"<<std::endl;
