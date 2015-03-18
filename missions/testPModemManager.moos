@@ -16,8 +16,8 @@ ProcessConfig = pModemManager
   AppTick   = 4
   CommsTick = 4
 
-  MODEM_LJ_POWER = FIO0
-  MAGNET_LJ_POWER = FIO4
+  MODEM_LJ_POWER = FIO6
+  MAGNET_LJ_POWER = FIO7
 
   //Number of robots in the swarm
   MODEM_MGR_NB_ROBOTS = 3
