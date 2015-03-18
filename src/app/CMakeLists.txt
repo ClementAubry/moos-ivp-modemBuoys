@@ -17,14 +17,12 @@ INCLUDE_DIRECTORIES(${LOCAL_LIBRARY_DIRS})
 
 # 'p' apps
   # ADD_SUBDIRECTORY(pLocalization)
-  ADD_SUBDIRECTORY(pModemManager)
 
 # 'u' apps
   ADD_SUBDIRECTORY(uJoystick)
 
 # 'i' apps
   ADD_SUBDIRECTORY(iRazorIMU)
-  ADD_SUBDIRECTORY(iModemInterface)
   ADD_SUBDIRECTORY(iModem)
   ADD_SUBDIRECTORY(iLabjack)
 
