@@ -44,29 +44,14 @@ bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
     #endif
       reportEvent("iLabjack: OnNewMail: " + key);
 
-      if(key == "SET_FIOX_STATE") //This data contain "FIO=X;VALUE=Y;"
+      if(key == "SET_FIOX_STATE")
       {
-        string strMsg = msg.GetString();
         int fioToSet = -1;
         int valueToSet = -1;
-        // 1) parse string message to knwow which FIO to set
-        std::size_t fioStart = strMsg.find("FIO=");
-        std::size_t fioEnd = strMsg.find(";");
-        if (fioStart!=std::string::npos && fioEnd!=std::string::npos)
-        {
-          char buffer[16];
-          std::size_t length = strMsg.copy(buffer,fioEnd-fioStart+4,fioStart+4);
-          buffer[length]='\0';
-          fioToSet = atoi(buffer);
-        }
-        std::size_t valueStart = strMsg.find("VALUE=");
-        if (valueStart!=std::string::npos)
-        {
-          char buffer[16];
-          std::size_t length = strMsg.copy(buffer,1,valueStart+6);
-          buffer[length]='\0';
-          valueToSet = atoi(buffer);
-        }
+        if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
+          reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
+        else if(!MOOSValFromString(valueToSet, msg.GetString(), "VALUE"))
+          reportRunWarning(msg.GetKey() + ": Unable to find 'value' parameter");
         if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
         {
           char buffer[200];
@@ -85,12 +70,6 @@ bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
             reportRunWarning(buffer);
             Notify("FIOX_STATE", msg.GetString());
           }
-        }
-        else
-        {
-          char buffer[200];
-          sprintf (buffer, "iLabjack: Error reading SET_FIOX_STATE variable. value : [%s], extracted FIO number = [%d], extracted FIO value = [%d]",msg.GetString().c_str(),fioToSet, valueToSet);
-          reportRunWarning(buffer);
         }
       }
 
