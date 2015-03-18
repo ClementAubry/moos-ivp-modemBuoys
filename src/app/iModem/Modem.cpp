@@ -253,7 +253,7 @@ bool Modem::Iterate()
         MOOSTrace("ModemManager: Not in Config Mode, nothing to do\n");
       break;
       case 1:
-        Notify("MODEM_MGR_START_CONFIG_TIME", MOOSTime());
+        Notify("MODEM_START_CONFIG_TIME", MOOSTime());
         // 2) notify iLabjack to power down modem
         MOOSTrace("ModemManager: Asking iLabjack modem powering down\n");
         sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 0);
@@ -326,7 +326,7 @@ bool Modem::Iterate()
       case 15:
         MOOSTrace("ModemManager: Modem powered on after configuration acknowledged by iLabjack, configuration process complete\n");
         m_iInConfigTime=0;
-        Notify("MODEM_MGR_END_CONFIG_TIME", MOOSTime());
+        Notify("MODEM_END_CONFIG_TIME", MOOSTime());
       break;
       default:
         MOOSTrace("ModemManager: Lost in config mode\n");
