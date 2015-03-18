@@ -13,4 +13,6 @@ ProcessConfig = iModem
 
   MODEM_LJ_POWER = FIO6
   MAGNET_LJ_POWER = FIO7
+
+  ROBOT_NAME = AUV1
 }

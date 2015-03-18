@@ -1,0 +1,70 @@
+Community = alpha // le nom de la communauté MOOS
+ServerHost = localhost // l’adresse du serveur
+ServerPort = 9000 // le port de la communauté
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  Run = iLabjack @ NewConsole = true
+  Run = uMS @ NewConsole = false
+  //Run = pLogger @ NewConsole = false
+  Run = iModem @ NewConsole = true~ iModemAUV1
+  Run = iModem @ NewConsole = true~ iModemAUV2
+  //Run = iModem @ NewConsole = true~ iModemAUV3
+
+}
+
+ProcessConfig = iModemAUV1
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  SERIAL_PORT_NAME = /dev/ttyUSB0
+  BAUD_RATE_CONF = 57600
+  BAUD_RATE_COMM = 9600
+
+  MODEM_LJ_POWER = FIO6
+  MAGNET_LJ_POWER = FIO7
+
+  ROBOT_NAME = AUV1
+}
+ProcessConfig = iModemAUV2
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  SERIAL_PORT_NAME = /dev/ttyUSB1
+  BAUD_RATE_CONF = 57600
+  BAUD_RATE_COMM = 9600
+
+  MODEM_LJ_POWER = FIO4
+  MAGNET_LJ_POWER = FIO5
+
+  ROBOT_NAME = AUV2
+}
+ProcessConfig = iModemAUV3
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  SERIAL_PORT_NAME = /dev/ttyUSB2
+  BAUD_RATE_CONF = 57600
+  BAUD_RATE_COMM = 9600
+
+  MODEM_LJ_POWER = FIO2
+  MAGNET_LJ_POWER = FIO3
+
+  ROBOT_NAME = AUV3
+}
+
+ProcessConfig = iLabjack
+{
+  AppTick   = 4
+  CommsTick = 4
+}
+ProcessConfig = pLogger
+{
+  AppTick   = 4
+  CommsTick = 4
+}
+

@@ -5,10 +5,11 @@ ServerPort = 9000 // le port de la communauté
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
-  Run = iModem @ NewConsole = true
   Run = iLabjack @ NewConsole = true
   Run = uMS @ NewConsole = false
   Run = pLogger @ NewConsole = false
+  Run = iModem @ NewConsole = true
+
 }
 
 ProcessConfig = iModem
@@ -22,6 +23,8 @@ ProcessConfig = iModem
 
   MODEM_LJ_POWER = FIO6
   MAGNET_LJ_POWER = FIO7
+
+  ROBOT_NAME = AUV1
 }
 
 ProcessConfig = iLabjack
