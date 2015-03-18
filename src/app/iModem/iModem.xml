@@ -1,52 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This file contains uJoystick documentation -->
-<?xml-stylesheet href="../../../doc/xmldocumentation.css" type="text/css"?> 
+<?xml-stylesheet href="../../../doc/xmldocumentation.css" type="text/css"?>
 <xmldoc>
   <moosapp>
 
-     <info>
-        <name>iModem</name>
-        <organization>ENSTA Bretagne</organization>
-        <date>2015</date>
-        <authors>
-           <author>Clément Aubry</author>
-        </authors>
-        <licence>MIT</licence>
-     </info>
+    <info>
+      <name>iModem</name>
+      <organization>ENSTA Bretagne</organization>
+      <date>2015</date>
+      <authors>
+        <author>Clément Aubry</author>
+      </authors>
+      <licence>MIT</licence>
+    </info>
 
-     <documentation>
-        <synopsis>
-          ...
-        </synopsis>
-        <interface>
-           <subscriptions>
-              <!--
-              <moosvar>
-                 <varname>EXAMPLE_VAR_IN</varname>
-                 <vartype>string</vartype>
-                 <varinfo>description of the MOOSVar</varinfo>
-              </moosvar>
-              -->
-           </subscriptions>
-           <publications>
-              <!--
-              <moosvar>
-                 <varname>EXAMPLE_VAR_OUT</varname>
-                 <vartype>string</vartype>
-                 <varinfo>description of the MOOSVar</varinfo>
-              </moosvar>
-              -->
-           </publications>
-        </interface>
-        <!-- if there is a bug or a special fact to know.. -->
-        <optional-comments>
-           No comment.
-        </optional-comments>
-        <!-- if something can be improved -->
-        <suggested-improvements>
-           No suggested improvements.
-        </suggested-improvements>
-     </documentation>
-
+    <documentation>
+      <synopsis>
+        ...
+      </synopsis>
+      <interface>
+        <subscriptions>
+          <moosvar>
+            <varname>MODEM_CONFIGURATION_REQUIRED</varname>
+            <vartype>string</vartype>
+            <varinfo>A string that signal to iModem that we need to change modem configuration. The role asked has to be contained in that string ("master" or "slave")</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_SEND_MESSAGE</varname>
+            <vartype>string</vartype>
+            <varinfo>A message we want to send by the modem. Only works in communiction mode.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_TIME_BEFORE_TALKING</varname>
+            <vartype>int</vartype>
+            <varinfo>An int containing a time(ms) to wait before talking on serial port after receiving a data. For more informations, ask FLB.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>FIOX_STATE</varname>
+            <vartype>string</vartype>
+            <varinfo>Published by iLabjack as an acknowledgement when FIOX has been changed, format : "FIO=x;VALUE=y;"</varinfo>
+          </moosvar>
+        </subscriptions>
+        <publications>
+          Notify("MODEM_START_CONFIG_TIME", MOOSTime());
+          Notify("SET_FIOX_STATE",buffer);
+          Notify("MODEM_END_CONFIG_TIME", MOOSTime());
+          <moosvar>
+            <varname>MODEM_EMISSION_TIME</varname>
+            <vartype>MOOSTime</vartype>
+            <varinfo>The MOOSTime when emmiting a message from the modem.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_MESSAGE_SENT</varname>
+            <vartype>string</vartype>
+            <varinfo>A message we sent to the modem.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_RECEPTION_TIME</varname>
+            <vartype>MOOSTime</vartype>
+            <varinfo>The MOOSTime when receiving a message from the modem.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_MESSAGE_RECEIVED</varname>
+            <vartype>string</vartype>
+            <varinfo>A message we receive by the modem.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_CONFIGURATION_COMPLETE</varname>
+            <vartype>bool</vartype>
+            <varinfo>A boolean setted to true when the configuration process is complete.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_START_CONFIG_TIME</varname>
+            <vartype>MOOSTime</vartype>
+            <varinfo>The time it was when configuration process start.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_END_CONFIG_TIME</varname>
+            <vartype>MOOSTime</vartype>
+            <varinfo>The time it was when configuration process end.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>SET_FIOX_STATE</varname>
+            <vartype>string</vartype>
+            <varinfo>These variable ask iLabjack app to change FIOX state. The string had to be formatted as : "FIO=x;VALUE=y;" with x the number of the FIO output and y the value</varinfo>
+          </moosvar>
+        </publications>
+      </interface>
+      <!-- if there is a bug or a special fact to know.. -->
+      <optional-comments>
+        No comment.
+      </optional-comments>
+      <!-- if something can be improved -->
+      <suggested-improvements>
+        No suggested improvements.
+      </suggested-improvements>
+    </documentation>
   </moosapp>
+
+</interface>
+<!-- if there is a bug or a special fact to know.. -->
+<optional-comments>
+  No comment.
+</optional-comments>
+<!-- if something can be improved -->
+<suggested-improvements>
+  No suggested improvements.
+</suggested-improvements>
+</documentation>
+
+</moosapp>
 </xmldoc>
