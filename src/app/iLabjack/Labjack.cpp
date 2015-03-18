@@ -125,7 +125,7 @@ bool Labjack::Iterate()
   {
     reportRunWarning("iLabjack: Received an error code of " + error);
     closeUSBConnection(hDevice);
-    reportEvent("iLabjack: Labjack USB disconnected");
+    reportRunWarning("iLabjack: Labjack USB disconnected");
     //Open first found U3 over USB
     if( (hDevice = openUSBConnection(localID)) == NULL )
     {
@@ -134,6 +134,8 @@ bool Labjack::Iterate()
     else
     {
       reportEvent("iLabjack: Labjack USB re-connexion success");
+      retractRunWarning("iLabjack: Error openning Labjack USB connexion");
+      retractRunWarning("iLabjack: Labjack USB disconnected");
     }
   }
 
