@@ -1,0 +1,39 @@
+Community = alpha // le nom de la communauté MOOS
+ServerHost = localhost // l’adresse du serveur
+ServerPort = 9000 // le port de la communauté
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  Run = iModem @ NewConsole = true
+  Run = iLabjack @ NewConsole = true
+  Run = uMS @ NewConsole = false
+  Run = pLogger @ NewConsole = false
+}
+
+ProcessConfig = iModem
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  SERIAL_PORT_NAME = /dev/ttyUSB0
+  BAUD_RATE_CONF = 57600
+  BAUD_RATE_COMM = 9600
+
+  MODEM_LJ_POWER = FIO6
+  MAGNET_LJ_POWER = FIO7
+}
+
+ProcessConfig = iLabjack
+{
+  AppTick   = 4
+  CommsTick = 4
+}
+ProcessConfig = pLogger
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  PATH=./
+}
+
