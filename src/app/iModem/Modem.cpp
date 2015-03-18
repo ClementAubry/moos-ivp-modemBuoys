@@ -111,34 +111,47 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
 
     if ( key == "MODEM_CONFIGURATION_REQUIRED" && msg.IsString() )
     {
-      m_iModemRoleRequired = -1;
-      string msg_val = msg.GetString();
-      if (strcmp("master",msg_val.c_str()))
-        m_iModemRoleRequired = 1;
-      if (strcmp("slave",msg_val.c_str()))
-        m_iModemRoleRequired = 0;
-      if (m_iModemRoleRequired != -1)
-      {
-        m_bModemConfigurationRequired = true;
-        m_iInConfigTime = 1;
-        reportEvent("iModem: New Mail asking new modem configuration as " + msg.GetString() + "\n");
-      }
+      string robotRole;
+      //if we found a string m_sRobotName=role, configure us as role
+      if(!MOOSValFromString(robotRole, msg.GetString(), m_sRobotName))
+        reportRunWarning(msg.GetKey() + ": Unable to find my role");
       else
-        reportRunWarning("iModem: ERROR: New Mail asking new modem configuration as ["+msg.GetString()+"], ASKED CONFIGURATION UNRECOGNIZED (case sensitive)\n");
+      {
+        m_iModemRoleRequired = -1;
+        if (strcmp("master",robotRole.c_str()))
+          m_iModemRoleRequired = 1;
+        if (strcmp("slave",robotRole.c_str()))
+          m_iModemRoleRequired = 0;
+        if (m_iModemRoleRequired != -1)
+        {
+          m_bModemConfigurationRequired = true;
+          m_iInConfigTime = 1;
+          reportEvent("iModem: New Mail asking new modem configuration as " + msg.GetString() + "\n");
+        }
+        else
+          reportRunWarning("iModem: ERROR: New Mail asking new modem configuration as ["+msg.GetString()+"], ASKED CONFIGURATION UNRECOGNIZED (case sensitive)\n");
+      }
     }
     else if ( key == "MODEM_SEND_MESSAGE" && msg.IsString() )
     {
-      if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
-      {
-        string msgToSent = msg.GetString();
-        m_Port.Write(msgToSent.c_str(), msgToSent.size());
-        reportEvent("iModem: Message ["+msgToSent+"] sent.\n");
-        Notify("MODEM_EMISSION_TIME", MOOSTime());
-        Notify("MODEM_MESSAGE_SENT", msgToSent);
-        retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
-      }
+      string messageToSent;
+      //if we found a string m_sRobotName=role, configure us as role
+      if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
+        reportRunWarning(msg.GetKey() + ": Unable to find my role");
       else
-        reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+      {
+        if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
+        {
+          string msgToSent = msg.GetString();
+          m_Port.Write(msgToSent.c_str(), msgToSent.size());
+          reportEvent("iModem: Message ["+msgToSent+"] sent.\n");
+          Notify("MODEM_EMISSION_TIME", MOOSTime());
+          Notify("MODEM_MESSAGE_SENT", msgToSent);
+          retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+        }
+        else
+          reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+      }
     }
     else if ( key == "MODEM_TIME_BEFORE_TALKING")
     {
@@ -146,29 +159,12 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     }
     else if(key == "FIOX_STATE")
     {
-      cout << "pModemManager: received FIOX_STATE: " << msg.GetString() << endl;
-      reportRunWarning("pModemManager: received FIOX_STATE: " + msg.GetString());
-      string strMsg = msg.GetString();
       int fioToSet = -1;
       int valueToSet = -1;
-        // 1) parse string message to knwow which FIO to set
-      std::size_t fioStart = strMsg.find("FIO=");
-      std::size_t fioEnd = strMsg.find(";");
-      if (fioStart!=std::string::npos && fioEnd!=std::string::npos)
-      {
-        char buffer[16];
-        std::size_t length = strMsg.copy(buffer,fioEnd-fioStart+4,fioStart+4);
-        buffer[length]='\0';
-        fioToSet = atoi(buffer);
-      }
-      std::size_t valueStart = strMsg.find("VALUE=");
-      if (valueStart!=std::string::npos)
-      {
-        char buffer[16];
-        std::size_t length = strMsg.copy(buffer,1,valueStart+6);
-        buffer[length]='\0';
-        valueToSet = atoi(buffer);
-      }
+      if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
+        reportRunWarning(msg.GetKey() + ": Unable to find 'fio' parameter");
+      else if(!MOOSValFromString(valueToSet, msg.GetString(), "VALUE"))
+        reportRunWarning(msg.GetKey() + ": Unable to find 'value' parameter");
       if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
       {
         if (fioToSet == m_iModemPowerOnLabjack)
@@ -193,7 +189,19 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           else
             MOOSTrace("ModemManager: Error receiving FIOX_STATE acknowledgement, unhandled case\n");
         }
+        else
+        {
+          MOOSTrace("ModemManager: FIOX_STATE not for me!\n");
+        }
       }
+    }
+    else if(key == "MODEM_STOP_ALIM")
+    {
+      char buffer[16]; //To publish "FIO=x;VALUE=y;" string
+      sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
+      Notify("SET_FIOX_STATE",buffer);
+      sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
+      Notify("SET_FIOX_STATE",buffer);
     }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
@@ -256,7 +264,7 @@ bool Modem::Iterate()
         Notify("MODEM_START_CONFIG_TIME", MOOSTime());
         // 2) notify iLabjack to power down modem
         MOOSTrace("ModemManager: Asking iLabjack modem powering down\n");
-        sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 0);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=2;
       break;
@@ -267,7 +275,7 @@ bool Modem::Iterate()
         MOOSTrace("ModemManager: Modem powered down aknowledged by iLabjack\n");
         // 3) notify iLabjack to power up magnet
         MOOSTrace("ModemManager: Asking iLabjack magnet powering up\n");
-        sprintf (buffer, "FIO=%d;VALUE=%d;",m_iMagnetPowerOnLabjack, 1);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 1);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=4;
       break;
@@ -277,7 +285,7 @@ bool Modem::Iterate()
       case 5:
         MOOSTrace("ModemManager: Modem powered off and magnet powered up acknowledged by iLabjack, can power up the modem \n");
         // 4) notify iLabjack to power up modem
-        sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 1);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
         Notify("SET_FIOX_STATE",buffer);
         //We are now waiting iModem to say that modem is alive in order to power down the magnet
         m_iInConfigTime=6;
@@ -292,7 +300,7 @@ bool Modem::Iterate()
       case 8:
         MOOSTrace("ModemManager: Modem is alive, asking iLabjack to power down the magnet\n");
         // 5) iModem has published a MODEM_IS_ALIVE message, notify iLabjack to power down magnet
-        sprintf (buffer, "FIO=%d;VALUE=%d;",m_iMagnetPowerOnLabjack, 0);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=9;
       break;
@@ -306,7 +314,7 @@ bool Modem::Iterate()
         // 6) when iModem publish an MODEM_CONFIGURATION_COMPLETE message,
         //     notify iLabjack to power down modem,
         MOOSTrace("ModemManager: Modem Configuration complete, asking iLabjack modem powering down\n");
-        sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 0);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=12;
       break;
@@ -316,7 +324,7 @@ bool Modem::Iterate()
       case 13:
         MOOSTrace("ModemManager: Modem powered off acknowledged by iLabjack, can power on the modem\n");
         MOOSPause(500);
-        sprintf (buffer, "FIO=%d;VALUE=%d;",m_iModemPowerOnLabjack, 1);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=14;
       break;
@@ -325,7 +333,6 @@ bool Modem::Iterate()
       break;
       case 15:
         MOOSTrace("ModemManager: Modem powered on after configuration acknowledged by iLabjack, configuration process complete\n");
-        m_iInConfigTime=0;
         Notify("MODEM_END_CONFIG_TIME", MOOSTime());
       break;
       default:
@@ -454,6 +461,11 @@ bool Modem::OnStartUp()
       }
       handled = true;
     }
+    else if(param == "ROBOT_NAME")
+    {
+      m_sRobotName = value;
+      handled = true;
+    }
 
 
     if(!handled)
@@ -467,6 +479,13 @@ bool Modem::OnStartUp()
   //m_Port.SetTermCharacter('\n');
   m_Port.Flush();
   m_timewarp = GetMOOSTimeWarp();
+
+  //Stop Modem alimentation
+  char buffer[16]; //To publish "FIO=x;VALUE=y;" string
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
+  Notify("SET_FIOX_STATE",buffer);
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
+  Notify("SET_FIOX_STATE",buffer);
 
   registerVariables();
   return true;
@@ -623,6 +642,7 @@ void Modem::ListenModemMessages()
                   msg_ReBootGlobal.print_hex(200);
 
                   Notify("MODEM_CONFIGURATION_COMPLETE", true);
+                  m_iInConfigTime = 11;
 
                   m_bModemConfigurationRequired = false;
                   m_bIsAlive = false;
@@ -702,6 +722,18 @@ void Modem::ListenModemMessages()
                   MOOSTrace("iModem: Sending mtReBoot Global : ");
                   msg_ReBootGlobal.print_hex(200);
                   m_bMtReBootHasBeenSent = true;
+                  m_iInConfigTime = 11;
+
+                  m_bModemConfigurationRequired = false;
+                  m_bIsAlive = false;
+                  m_bSentCfg = false;
+                  m_bGetVersionData = false;
+                  m_bGetBBUserData = false;
+                  m_bGetFpgaVersionData = false;
+                  m_bGetFirstPgrAck = false;
+                  m_bGetSecondPgrAck = false;
+                  m_bGetThirdPgrAck = false;
+                  m_bModemConfiguratonComplete = false;
               }
           }
       }
@@ -743,6 +775,7 @@ void Modem::registerVariables()
   Register("MODEM_SEND_MESSAGE", 0);
   Register("MODEM_TIME_BEFORE_TALKING", 0);
   Register("FIOX_STATE", 0);
+  Register("MODEM_STOP_ALIM", 0);
 }
 
 //------------------------------------------------------------
