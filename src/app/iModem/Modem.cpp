@@ -250,9 +250,6 @@ bool Modem::Iterate()
       MOOSPause(1000);
       m_timewarp = GetMOOSTimeWarp();
     }
-    //Re launch configuration thread if not running
-    if (!m_serial_thread_conf.IsThreadRunning())
-      m_serial_thread_conf.Start();
 
     //Configuration Process
     char buffer[16]; //To publish "FIO=x;VALUE=y;" string
@@ -273,6 +270,9 @@ bool Modem::Iterate()
       break;
       case 3:
         MOOSTrace("ModemManager: Modem powered down aknowledged by iLabjack\n");
+      //Re launch configuration thread if not running
+        if (!m_serial_thread_conf.IsThreadRunning())
+          m_serial_thread_conf.Start();
         // 3) notify iLabjack to power up magnet
         MOOSTrace("ModemManager: Asking iLabjack magnet powering up\n");
         sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 1);
@@ -594,16 +594,19 @@ void Modem::ListenModemMessages()
               {
                   m_bGetFirstPgrAck = true;
                   MOOSTrace("iModem: Modem send FIRST mtPgrAck\n");
+                  m_uiTimeoutUS = 0;
               }
               else if(snmsg.data().at(13) == 0x02 &&snmsg.data().at(14) == 0x00 && snmsg.data().at(15) == 0x03)
               {
                   m_bGetSecondPgrAck = true;
                   MOOSTrace("iModem: Modem send SECOND mtPgrAck\n");
+                  m_uiTimeoutUS = 0;
               }
               else if(snmsg.data().at(13) == 0x02 &&snmsg.data().at(14) == 0x01 && snmsg.data().at(15) == 0x03)
               {
                   m_bGetThirdPgrAck = true;
                   MOOSTrace("iModem: Modem send THIRD mtPgrAck\n");
+                  m_uiTimeoutUS = 0;
               }
           }
           sBuf.erase(0,msg_size);
