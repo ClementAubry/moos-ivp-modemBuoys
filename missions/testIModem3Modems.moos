@@ -10,7 +10,7 @@ ProcessConfig = ANTLER
   //Run = pLogger @ NewConsole = false
   Run = iModem @ NewConsole = true~ iModemAUV1
   Run = iModem @ NewConsole = true~ iModemAUV2
-  //Run = iModem @ NewConsole = true~ iModemAUV3
+  Run = iModem @ NewConsole = true~ iModemAUV3
 
 }
 
@@ -52,7 +52,7 @@ ProcessConfig = iModemAUV3
   BAUD_RATE_COMM = 9600
 
   MODEM_LJ_POWER = FIO2
-  MAGNET_LJ_POWER = FIO3
+  MAGNET_LJ_POWER = FIO0
 
   ROBOT_NAME = AUV3
 }
