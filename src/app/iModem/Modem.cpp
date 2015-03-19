@@ -12,6 +12,23 @@
 
 using namespace std;
 
+
+
+bool invalidChar (char c)
+{
+  return !(c>=0 && c <128);
+}
+void stripUnicode(string & str)
+{
+  str.erase(remove_if(str.begin(),str.end(), invalidChar), str.end());
+}
+void stripCRLF7F(string & mystring)
+{
+  mystring.erase( std::remove(mystring.begin(), mystring.end(), '\r'), mystring.end() );
+  mystring.erase( std::remove(mystring.begin(), mystring.end(), '\n'), mystring.end() );
+  mystring.erase( std::remove(mystring.begin(), mystring.end(), 0x7F), mystring.end() );
+}
+
 //---------------------------------------------------------
 // Constructor
 
@@ -39,6 +56,7 @@ Modem::Modem()
   m_iTimeBeforeTalking = 30;
   m_iInConfigTime = 0;
   m_bInRanging = false;
+  m_sRngStr="";
 
   //Configuration for Modem and magnet power supply
   m_sModemPowerOnLabjack = "FIO0";
@@ -403,20 +421,61 @@ bool Modem::Iterate()
       // While we are in ranging and the concatenation of received string is different from RangeTMO OR Range=xxxm, concat strings without CRLF chars
       // When the string contain RangeTMO OR Range=xxxm Notify user that ranging answer is received
       Notify("MODEM_RECEPTION_TIME", MOOSTime());
-      if(m_bInRanging && strcmp("Range",message.c_str()))
+      if(m_bInRanging)
       {
-        reportEvent("iModem: Receiving ["+message+"]\n");
-        // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
-        if (strcmp("TMO",message.c_str()))
+        m_sRngStr += message;
+        stripUnicode(m_sRngStr);
+        stripCRLF7F(m_sRngStr);
+        // reportEvent("iModem: Receiving ["+message+"]\n");
+          // MOOSTrace("iModem: Receiving = [%s]\n", message.c_str());
+        // reportEvent("iModem: Ranging message = ["+m_sRngStr+"]\n");
+        // MOOSTrace("iModem: Ranging message = [%s]\n", m_sRngStr.c_str());
+// The string contain 0x7f which is not printed out by terminal but explain why "RangeTMO" could be different from "RangeTMO"
+// printf("rngMessage hexa : [");
+// for (int k=0; k < (int)m_sRngStr.size();++k)
+//     printf("%02x ", (unsigned char)m_sRngStr.data()[k]);
+//   printf("]\n");
+// printf("sTest hexa : [");
+// string sTest("RangeTMO");
+// for (int k=0; k < (int)sTest.size();++k)
+//     printf("%02x ", (unsigned char)sTest.data()[k]);
+//   printf("]\n");
+// MOOSTrace("iModem: testString = [%s]\n", sTest.c_str());
+        // if (strcmp("RangeTMO",m_sRngStr.c_str())==0)
+        if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
-          Notify("MODEM_RANGING_TIMEOUT", message);
+          Notify("MODEM_RANGING_TIMEOUT", m_sRngStr);
           reportEvent("iModem: Ranging Timeout\n");
+          // MOOSTrace("iModem: Ranging Timeout******************************************************\n");
+          m_sRngStr="";
+          m_bInRanging = false;
         }
-        else
+        else if (m_sRngStr.compare(0,6,"Range=") == 0 && m_sRngStr.size() >= 10)
         {
-          Notify("MODEM_RANGING_RECEIVED", message);
-          reportEvent("iModem: Ranging received = "+message+"\n");
+          unsigned int foundM = m_sRngStr.find_last_of('m');
+          unsigned int foundEq = m_sRngStr.find_last_of('=');
+          string meters = m_sRngStr.substr (0,foundM+1);
+          double rangingValue;
+
+          if(!MOOSValFromString(rangingValue, meters, "Range="))
+            reportRunWarning(msg.GetKey() + ": Unable to find my role");
+          else
+          {
+            /************ rangingValue is a double that contain the value returned by ranging function ******************/
+            // printf("ranging return [%s]******************************************************\n",meters.c_str());
+            Notify("MODEM_RANGING_RECEIVED", m_sRngStr);
+            reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
+            // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
+            m_sRngStr="";
+            m_bInRanging = false;
+          }
         }
+        // else
+        // {
+        //   reportEvent("iModem: Uncomplete ranging received = "+message+"\n");
+        //   // MOOSTrace("iModem: Uncomplete ranging received = [%s]\n", message.c_str());
+        //   // MOOSTrace("iModem: Uncomplete ranging str received = [%s]\n", m_sRngStr.c_str());
+        // }
       }
       else
       {

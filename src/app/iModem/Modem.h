@@ -86,6 +86,7 @@ class Modem : public AppCastingMOOSApp
 
     int m_iInConfigTime;
     bool m_bInRanging;
+    std::string m_sRngStr;
 
     //Thread created for modem configuration
     CMOOSThread   m_serial_thread_conf;
