@@ -258,6 +258,7 @@ bool Modem::Iterate()
         MOOSTrace("ModemManager: Not in Config Mode, nothing to do\n");
       break;
       case 1:
+        reportEvent("iModem: Configuration Process started\n");
         Notify("MODEM_START_CONFIG_TIME", MOOSTime());
         // 2) notify iLabjack to power down modem
         MOOSTrace("ModemManager: Asking iLabjack modem powering down\n");
@@ -334,6 +335,7 @@ bool Modem::Iterate()
       case 15:
         MOOSTrace("ModemManager: Modem powered on after configuration acknowledged by iLabjack, configuration process complete\n");
         Notify("MODEM_END_CONFIG_TIME", MOOSTime());
+        reportEvent("iModem: Configuration Process ended\n");
       break;
       default:
         MOOSTrace("ModemManager: Lost in config mode\n");
@@ -371,12 +373,12 @@ bool Modem::Iterate()
     {
       Notify("MODEM_RECEPTION_TIME", MOOSTime());
       reportEvent("iModem: Receiving ["+message+"]\n");
-      MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
+      // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", message);
     }
   }
 
-  // AppCastingMOOSApp::PostReport();
+  AppCastingMOOSApp::PostReport();
   return true;
 }
 
