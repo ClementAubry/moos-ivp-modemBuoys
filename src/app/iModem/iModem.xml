@@ -48,14 +48,24 @@
         </subscriptions>
         <publications>
           <moosvar>
-            <varname>MODEM_EMISSION_TIME</varname>
+            <varname>MODEM_MSG_EMISSION_TIME</varname>
             <vartype>MOOSTime</vartype>
             <varinfo>The MOOSTime when emmiting a message from the modem.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_RNG_EMISSION_TIME</varname>
+            <vartype>MOOSTime</vartype>
+            <varinfo>The MOOSTime when emmiting a rng request from the modem.</varinfo>
           </moosvar>
           <moosvar>
             <varname>MODEM_MESSAGE_SENT</varname>
             <vartype>string</vartype>
             <varinfo>A message we sent to the modem.</varinfo>
+          </moosvar>
+          <moosvar>
+            <varname>MODEM_RNG_SENT</varname>
+            <vartype>bool</vartype>
+            <varinfo>Emitted when rng has been sent</varinfo>
           </moosvar>
           <moosvar>
             <varname>MODEM_RECEPTION_TIME</varname>
