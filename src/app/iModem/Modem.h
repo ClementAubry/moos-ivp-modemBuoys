@@ -85,6 +85,7 @@ class Modem : public AppCastingMOOSApp
     int m_iMagnetPowerOnLabjack;
 
     int m_iInConfigTime;
+    bool m_bInRanging;
 
     //Thread created for modem configuration
     CMOOSThread   m_serial_thread_conf;

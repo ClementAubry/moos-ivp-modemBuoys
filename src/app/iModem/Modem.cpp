@@ -38,6 +38,7 @@ Modem::Modem()
   m_uiTimeoutUS = 0;
   m_iTimeBeforeTalking = 30;
   m_iInConfigTime = 0;
+  m_bInRanging = false;
 
   //Configuration for Modem and magnet power supply
   m_sModemPowerOnLabjack = "FIO0";
@@ -80,10 +81,16 @@ Modem::Modem()
 }
 Modem::~Modem()
 {
-    reportEvent("iModem: stopping threads.\n");
-    m_serial_thread_conf.Stop();
-    m_serial_thread_tempo.Stop();
-    reportEvent("iModem: finished.\n");
+  reportEvent("iModem: stopping threads.\n");
+  m_serial_thread_conf.Stop();
+  m_serial_thread_tempo.Stop();
+  //Stop Magnet and modem alimentation
+  char buffer[16]; //To publish "FIO=x;VALUE=y;" string
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
+  Notify("SET_FIOX_STATE",buffer);
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
+  Notify("SET_FIOX_STATE",buffer);
+  reportEvent("iModem: finished.\n");
 }
 
 //---------------------------------------------------------
@@ -137,16 +144,15 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
       string messageToSent;
       //if we found a string m_sRobotName=role, configure us as role
       if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
-        reportRunWarning(msg.GetKey() + ": Unable to find my role");
+        reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_SEND_MESSAGE variable");
       else
       {
         if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
         {
-          string msgToSent = msg.GetString();
-          m_Port.Write(msgToSent.c_str(), msgToSent.size());
-          reportEvent("iModem: Message ["+msgToSent+"] sent.\n");
-          Notify("MODEM_EMISSION_TIME", MOOSTime());
-          Notify("MODEM_MESSAGE_SENT", msgToSent);
+          m_Port.Write(messageToSent.c_str(), messageToSent.size());
+          reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
+          Notify("MODEM_MSG_EMISSION_TIME", MOOSTime());
+          Notify("MODEM_MESSAGE_SENT", messageToSent);
           retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
@@ -202,6 +208,28 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
       Notify("SET_FIOX_STATE",buffer);
       sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
       Notify("SET_FIOX_STATE",buffer);
+    }
+    else if(key == "MODEM_SEND_RNG")
+    {
+      string messageToSent;
+      //if we found a string m_sRobotName=role, configure us as role
+      if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
+        reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_SEND_RNG variable");
+      else
+      {
+        string ranging("rng\n");
+        if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
+        {
+          m_Port.Write(ranging.c_str(), ranging.size());
+          reportEvent("iModem: Message ["+ranging+"] sent.\n");
+          Notify("MODEM_RNG_EMISSION_TIME", MOOSTime());
+          Notify("MODEM_RNG_SENT", true);
+          m_bInRanging = true;
+          retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+        }
+        else
+          reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+      }
     }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
@@ -371,10 +399,31 @@ bool Modem::Iterate()
     }
     if(receiveMessage(message, 1))
     {
+      //TODO : In ranging mode, we Range=x.xm is cutted (4char max emitted by the modem).
+      // While we are in ranging and the concatenation of received string is different from RangeTMO OR Range=xxxm, concat strings without CRLF chars
+      // When the string contain RangeTMO OR Range=xxxm Notify user that ranging answer is received
       Notify("MODEM_RECEPTION_TIME", MOOSTime());
-      reportEvent("iModem: Receiving ["+message+"]\n");
-      // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
-      Notify("MODEM_MESSAGE_RECEIVED", message);
+      if(m_bInRanging && strcmp("Range",message.c_str()))
+      {
+        reportEvent("iModem: Receiving ["+message+"]\n");
+        // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
+        if (strcmp("TMO",message.c_str()))
+        {
+          Notify("MODEM_RANGING_TIMEOUT", message);
+          reportEvent("iModem: Ranging Timeout\n");
+        }
+        else
+        {
+          Notify("MODEM_RANGING_RECEIVED", message);
+          reportEvent("iModem: Ranging received = "+message+"\n");
+        }
+      }
+      else
+      {
+        reportEvent("iModem: Receiving ["+message+"]\n");
+        // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
+        Notify("MODEM_MESSAGE_RECEIVED", message);
+      }
     }
   }
 
@@ -482,11 +531,11 @@ bool Modem::OnStartUp()
   m_Port.Flush();
   m_timewarp = GetMOOSTimeWarp();
 
-  //Stop Modem alimentation
+  //Stop Magnet alimentation
   char buffer[16]; //To publish "FIO=x;VALUE=y;" string
-  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
-  Notify("SET_FIOX_STATE",buffer);
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
+  Notify("SET_FIOX_STATE",buffer);
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
   Notify("SET_FIOX_STATE",buffer);
 
   registerVariables();
@@ -763,8 +812,6 @@ bool Modem::receiveMessage(string &message, double reception_timeout)
     if(m_Port.ReadNWithTimeOut(message_char, MESSAGE_MAX_LENGTH,reception_timeout))
     {
         message = message_char;
-        // Removing '\n' for display purposes
-        //message.erase(remove(message.begin(), message.end(), '\r\n'), message.end());
         return true;
     }
     return false;
@@ -778,6 +825,7 @@ void Modem::registerVariables()
   AppCastingMOOSApp::RegisterVariables();
   Register("MODEM_CONFIGURATION_REQUIRED", 0);
   Register("MODEM_SEND_MESSAGE", 0);
+  Register("MODEM_SEND_RNG", 0);
   Register("MODEM_TIME_BEFORE_TALKING", 0);
   Register("FIOX_STATE", 0);
   Register("MODEM_STOP_ALIM", 0);
