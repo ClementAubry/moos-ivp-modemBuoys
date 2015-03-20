@@ -1,0 +1,16 @@
+//------------------------------------------------
+// uModemScheduler config block
+
+ProcessConfig = uModemScheduler
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  //Times in seconds allowed to modems for configuration, ranging and communication.
+  // Communication time is divided in two parts : slave to master comm followed by master to slaves comm.
+  // Each of those communication parts last SPEAK_TIME seconds
+  CONFIG_TIME = 2
+  RANGE_TIME  = 2
+  SPEAK_TIME  = 2
+
+}
