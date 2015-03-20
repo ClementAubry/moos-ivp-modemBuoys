@@ -103,11 +103,11 @@ Modem::~Modem()
   m_serial_thread_conf.Stop();
   m_serial_thread_tempo.Stop();
   //Stop Magnet and modem alimentation
-  char buffer[16]; //To publish "FIO=x;VALUE=y;" string
-  sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
-  Notify("SET_FIOX_STATE",buffer);
-  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
-  Notify("SET_FIOX_STATE",buffer);
+  char buffer[16]; //To publish "FIO=x" string
+  sprintf (buffer, "FIO=%d",m_iMagnetPowerOnLabjack);
+  Notify("SET_FIOX_INPUT",buffer);
+  sprintf (buffer, "FIO=%d",m_iModemPowerOnLabjack);
+  Notify("SET_FIOX_INPUT",buffer);
   reportEvent("iModem: finished.\n");
 }
 
@@ -222,10 +222,10 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     else if(key == "MODEM_STOP_ALIM")
     {
       char buffer[16]; //To publish "FIO=x;VALUE=y;" string
-      sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
-      Notify("SET_FIOX_STATE",buffer);
-      sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
-      Notify("SET_FIOX_STATE",buffer);
+      sprintf (buffer, "FIO=%d",m_iModemPowerOnLabjack);
+      Notify("SET_FIOX_INPUT",buffer);
+      sprintf (buffer, "FIO=%d",m_iMagnetPowerOnLabjack);
+      Notify("SET_FIOX_INPUT",buffer);
     }
     else if(key == "MODEM_SEND_RNG")
     {
@@ -308,8 +308,8 @@ bool Modem::Iterate()
         Notify("MODEM_START_CONFIG_TIME", MOOSTime());
         // 2) notify iLabjack to power down modem
         MOOSTrace("ModemManager: Asking iLabjack modem powering down\n");
-        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
-        Notify("SET_FIOX_STATE",buffer);
+        sprintf (buffer, "FIO=%d",m_iModemPowerOnLabjack);
+        Notify("SET_FIOX_INPUT",buffer);
         m_iInConfigTime=2;
       break;
       case 2:
@@ -322,7 +322,7 @@ bool Modem::Iterate()
           m_serial_thread_conf.Start();
         // 3) notify iLabjack to power up magnet
         MOOSTrace("ModemManager: Asking iLabjack magnet powering up\n");
-        sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 1);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=4;
       break;
@@ -332,7 +332,7 @@ bool Modem::Iterate()
       case 5:
         MOOSTrace("ModemManager: Modem powered off and magnet powered up acknowledged by iLabjack, can power up the modem \n");
         // 4) notify iLabjack to power up modem
-        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         //We are now waiting iModem to say that modem is alive in order to power down the magnet
         m_iInConfigTime=6;
@@ -347,8 +347,8 @@ bool Modem::Iterate()
       case 8:
         MOOSTrace("ModemManager: Modem is alive, asking iLabjack to power down the magnet\n");
         // 5) iModem has published a MODEM_IS_ALIVE message, notify iLabjack to power down magnet
-        sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
-        Notify("SET_FIOX_STATE",buffer);
+        sprintf (buffer, "FIO=%d",m_iMagnetPowerOnLabjack);
+        Notify("SET_FIOX_INPUT",buffer);
         m_iInConfigTime=9;
       break;
       case 9:
@@ -361,8 +361,8 @@ bool Modem::Iterate()
         // 6) when iModem publish an MODEM_CONFIGURATION_COMPLETE message,
         //     notify iLabjack to power down modem,
         MOOSTrace("ModemManager: Modem Configuration complete, asking iLabjack modem powering down\n");
-        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
-        Notify("SET_FIOX_STATE",buffer);
+        sprintf (buffer, "FIO=%d",m_iModemPowerOnLabjack);
+        Notify("SET_FIOX_INPUT",buffer);
         m_iInConfigTime=12;
       break;
       case 12:
@@ -371,7 +371,7 @@ bool Modem::Iterate()
       case 13:
         MOOSTrace("ModemManager: Modem powered off acknowledged by iLabjack, can power on the modem\n");
         MOOSPause(500);
-        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
+        sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=14;
       break;
@@ -644,10 +644,10 @@ bool Modem::OnStartUp()
   m_timewarp = GetMOOSTimeWarp();
 
   //Stop Magnet alimentation
-  char buffer[16]; //To publish "FIO=x;VALUE=y;" string
-  sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
-  Notify("SET_FIOX_STATE",buffer);
-  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
+  char buffer[16]; //To publish "FIO=x,VALUE=y" string
+  sprintf (buffer, "FIO=%d",m_iMagnetPowerOnLabjack);
+  Notify("SET_FIOX_INPUT",buffer);
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
   Notify("SET_FIOX_STATE",buffer);
 
   registerVariables();
@@ -757,19 +757,31 @@ void Modem::ListenModemMessages()
               {
                   m_bGetFirstPgrAck = true;
                   MOOSTrace("iModem: Modem send FIRST mtPgrAck\n");
-                  m_uiTimeoutUS = 0;
+                  if (m_serial_thread_tempo.IsThreadRunning())
+                  {
+                    m_serial_thread_tempo.Stop();
+                    m_uiTimeoutUS = 0;
+                  }
               }
               else if(snmsg.data().at(13) == 0x02 &&snmsg.data().at(14) == 0x00 && snmsg.data().at(15) == 0x03)
               {
                   m_bGetSecondPgrAck = true;
                   MOOSTrace("iModem: Modem send SECOND mtPgrAck\n");
-                  m_uiTimeoutUS = 0;
+                  if (m_serial_thread_tempo.IsThreadRunning())
+                  {
+                    m_serial_thread_tempo.Stop();
+                    m_uiTimeoutUS = 0;
+                  }
               }
               else if(snmsg.data().at(13) == 0x02 &&snmsg.data().at(14) == 0x01 && snmsg.data().at(15) == 0x03)
               {
                   m_bGetThirdPgrAck = true;
                   MOOSTrace("iModem: Modem send THIRD mtPgrAck\n");
-                  m_uiTimeoutUS = 0;
+                  if (m_serial_thread_tempo.IsThreadRunning())
+                  {
+                    m_serial_thread_tempo.Stop();
+                    m_uiTimeoutUS = 0;
+                  }
               }
           }
           sBuf.erase(0,msg_size);

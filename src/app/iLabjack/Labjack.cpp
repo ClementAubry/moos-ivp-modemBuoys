@@ -72,6 +72,34 @@ bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
           }
         }
       }
+      if(key == "SET_FIOX_INPUT")
+      {
+        int fioToSet = -1;
+        if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
+          reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
+        if (fioToSet >= 0 && fioToSet <= 7)
+        {
+          char buffer[200];
+          sprintf (buffer, "iLabjack: Calling eDI to set FIO%d as input and read state",fioToSet);
+          reportRunWarning(buffer);
+
+          long lngState;
+          if( (error = eDI(hDevice, 1, fioToSet, &lngState)) != 0 )
+          {
+            sprintf (buffer, "iLabjack: received an error code calling eDI on FIO%d, error code : %ld",fioToSet, error);
+            reportRunWarning(buffer);
+            closeUSBConnection(hDevice);
+          }
+          else
+          {
+            char buffer[200];
+            sprintf (buffer, "iLabjack: FIO%d setted as input, read state = %ld\n",fioToSet, lngState);
+            reportRunWarning(buffer);
+            sprintf (buffer, "FIO=%d,VALUE=0\n",fioToSet);
+            Notify("FIOX_STATE", buffer);
+          }
+        }
+      }
 
 
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
@@ -185,6 +213,7 @@ void Labjack::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   Register("SET_FIOX_STATE", 0);
+  Register("SET_FIOX_INPUT", 0);
   // Register("FOOBAR", 0);
 }
 
