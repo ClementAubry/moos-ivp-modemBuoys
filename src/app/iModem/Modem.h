@@ -39,6 +39,7 @@ class Modem : public AppCastingMOOSApp
     void ModemTempoFunction();
     void ListenModemMessages();
     bool receiveMessage(std::string & message, double reception_timeout);
+    bool receiveRanging(std::string & message, double reception_timeout);
     bool SendModemConfigurationMessage(const SeaNetMsg & msg){return (m_Port.Write(msg.data().data(), (int)msg.data().size()) == (int)msg.data().size());}
 
   protected: // Standard AppCastingMOOSApp functions to overload
