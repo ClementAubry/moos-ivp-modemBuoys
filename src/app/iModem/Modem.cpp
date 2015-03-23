@@ -152,6 +152,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           m_bModemConfigurationRequired = true;
           m_iInConfigTime = 1;
           reportEvent("iModem: New Mail asking new modem configuration as " + msg.GetString() + "\n");
+          beginTime = MOOSTime();
         }
         else
           reportRunWarning("iModem: ERROR: New Mail asking new modem configuration as ["+msg.GetString()+"], ASKED CONFIGURATION UNRECOGNIZED (case sensitive)\n");
@@ -272,7 +273,7 @@ bool Modem::OnConnectToServer()
 bool Modem::Iterate()
 {
   AppCastingMOOSApp::Iterate();
-
+  double temps_secs;
   string message;
   if(m_bModemConfigurationRequired)
   {
@@ -298,7 +299,7 @@ bool Modem::Iterate()
     }
 
     //Configuration Process
-    char buffer[16]; //To publish "FIO=x;VALUE=y;" string
+    char buffer[100];
     switch (m_iInConfigTime) {
       case 0:
         MOOSTrace("ModemManager: Not in Config Mode, nothing to do\n");
@@ -370,7 +371,7 @@ bool Modem::Iterate()
       break;
       case 13:
         MOOSTrace("ModemManager: Modem powered off acknowledged by iLabjack, can power on the modem\n");
-        MOOSPause(500);
+        // MOOSPause(500);
         sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
         Notify("SET_FIOX_STATE",buffer);
         m_iInConfigTime=14;
@@ -380,11 +381,26 @@ bool Modem::Iterate()
       break;
       case 15:
         MOOSTrace("ModemManager: Modem powered on after configuration acknowledged by iLabjack, configuration process complete\n");
-        Notify("MODEM_END_CONFIG_TIME", MOOSTime());
+        endTime = MOOSTime();
+        Notify("MODEM_END_CONFIG_TIME", endTime);
+        Notify("MODEM_CONFIG_TIME_SECS", endTime-beginTime);
         reportEvent("iModem: Configuration Process ended\n");
-      break;
+        sprintf (buffer, "time elapsed during configuration process : %f seconds",endTime-beginTime);
+        reportEvent(buffer);
+        m_bModemConfigurationRequired = false;
+        m_bIsAlive = false;
+        m_bSentCfg = false;
+        m_bGetVersionData = false;
+        m_bGetBBUserData = false;
+        m_bGetFpgaVersionData = false;
+        m_bGetFirstPgrAck = false;
+        m_bGetSecondPgrAck = false;
+        m_bGetThirdPgrAck = false;
+        m_bModemConfiguratonComplete = false;
+        break;
       default:
         MOOSTrace("ModemManager: Lost in config mode\n");
+      break;
     }
   }
   else
@@ -539,7 +555,7 @@ bool Modem::Iterate()
 //     }
   }
 
-  AppCastingMOOSApp::PostReport();
+  // AppCastingMOOSApp::PostReport();
   return true;
 }
 
@@ -805,7 +821,7 @@ void Modem::ListenModemMessages()
           */
           //Take a breath before talking
           MOOSPause(m_iTimeBeforeTalking);
-          if (m_bIsAlive && !m_bModemConfiguratonComplete)
+          if (m_bIsAlive && !m_bModemConfiguratonComplete && m_iInConfigTime < 11)
           {
               if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && m_bSentCfg)
               {
@@ -822,16 +838,6 @@ void Modem::ListenModemMessages()
                   Notify("MODEM_CONFIGURATION_COMPLETE", true);
                   m_iInConfigTime = 11;
 
-                  m_bModemConfigurationRequired = false;
-                  m_bIsAlive = false;
-                  m_bSentCfg = false;
-                  m_bGetVersionData = false;
-                  m_bGetBBUserData = false;
-                  m_bGetFpgaVersionData = false;
-                  m_bGetFirstPgrAck = false;
-                  m_bGetSecondPgrAck = false;
-                  m_bGetThirdPgrAck = false;
-                  m_bModemConfiguratonComplete = false;
               }
               else if(!m_bGetVersionData && m_uiTimeoutUS == 0)
               {
@@ -862,7 +868,7 @@ void Modem::ListenModemMessages()
                   SendModemConfigurationMessage(msg_EraseSector);
                   MOOSTrace("iModem: Sending mtEraseSector : ");
                   msg_EraseSector.print_hex(200);
-                  m_uiTimeoutUS = 3000;
+                  m_uiTimeoutUS = 1000;
                   m_serial_thread_tempo.Start();//A timeout of 3 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
               else if(m_bGetFirstPgrAck && !m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
@@ -873,7 +879,7 @@ void Modem::ListenModemMessages()
                   SendModemConfigurationMessage(msg_ProgBlock);
                   MOOSTrace("iModem: Sending first mtProgBlock : ");
                   msg_ProgBlock.print_hex(300);
-                  m_uiTimeoutUS = 2000;
+                  m_uiTimeoutUS = 1000;
                   m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
               else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
@@ -885,7 +891,7 @@ void Modem::ListenModemMessages()
                   SendModemConfigurationMessage(msg_ProgBlock);
                   MOOSTrace("iModem: Sending second mtProgBlock : ");
                   msg_ProgBlock.print_hex(300);
-                  m_uiTimeoutUS = 2000;
+                  m_uiTimeoutUS = 1000;
                   m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
               else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && m_bGetThirdPgrAck && !m_bModemConfiguratonComplete)
@@ -902,16 +908,16 @@ void Modem::ListenModemMessages()
                   m_bMtReBootHasBeenSent = true;
                   m_iInConfigTime = 11;
 
-                  m_bModemConfigurationRequired = false;
-                  m_bIsAlive = false;
-                  m_bSentCfg = false;
-                  m_bGetVersionData = false;
-                  m_bGetBBUserData = false;
-                  m_bGetFpgaVersionData = false;
-                  m_bGetFirstPgrAck = false;
-                  m_bGetSecondPgrAck = false;
-                  m_bGetThirdPgrAck = false;
-                  m_bModemConfiguratonComplete = false;
+                  // m_bModemConfigurationRequired = false;
+                  // m_bIsAlive = false;
+                  // m_bSentCfg = false;
+                  // m_bGetVersionData = false;
+                  // m_bGetBBUserData = false;
+                  // m_bGetFpgaVersionData = false;
+                  // m_bGetFirstPgrAck = false;
+                  // m_bGetSecondPgrAck = false;
+                  // m_bGetThirdPgrAck = false;
+                  // m_bModemConfiguratonComplete = false;
               }
           }
       }

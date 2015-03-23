@@ -20,6 +20,7 @@
 
 #include <fstream>
 #include <string.h>
+#include <ctime>
 
 #define MESSAGE_MAX_LENGTH 4
 
@@ -53,6 +54,10 @@ class Modem : public AppCastingMOOSApp
     int           m_baudrate_comm;
     char          m_modemNodeAddr; //always 85 for modem, setted in Ctor
     double        m_timewarp;
+
+    double beginTime;
+    double endTime;
+
 
 
   private: // State variables
@@ -125,6 +130,8 @@ class Modem : public AppCastingMOOSApp
     *   void         reportRunWarning(const std::string&);
     *   void         retractRunWarning(const std::string&); //the run warning we want to retract must be exactly the same string as the runWarning
     */
+
+
 
 };
 
