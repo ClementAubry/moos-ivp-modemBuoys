@@ -18,6 +18,14 @@ using namespace std;
 
 Labjack::Labjack()
 {
+  m_iFioState[0] = 0;
+  m_iFioState[1] = 0;
+  m_iFioState[2] = 0;
+  m_iFioState[3] = 0;
+  m_iFioState[4] = 0;
+  m_iFioState[5] = 0;
+  m_iFioState[6] = 0;
+  m_iFioState[7] = 0;
 }
 
 //---------------------------------------------------------
@@ -26,6 +34,7 @@ Labjack::Labjack()
 bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
 {
   AppCastingMOOSApp::OnNewMail(NewMail);
+  char buffer[200];
 
   MOOSMSG_LIST::iterator p;
   for(p = NewMail.begin() ; p != NewMail.end() ; p++)
@@ -33,75 +42,89 @@ bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
     CMOOSMsg &msg = *p;
     string key    = msg.GetKey();
 
-    #if 0 // Keep these around just for template
-      string comm  = msg.GetCommunity();
-      double dval  = msg.GetDouble();
-      string sval  = msg.GetString();
-      string msrc  = msg.GetSource();
-      double mtime = msg.GetTime();
-      bool   mdbl  = msg.IsDouble();
-      bool   mstr  = msg.IsString();
-    #endif
-      reportEvent("iLabjack: OnNewMail: " + key);
+    // reportEvent("iLabjack: OnNewMail: " + key);
 
-      if(key == "SET_FIOX_STATE")
-      {
-        int fioToSet = -1;
-        int valueToSet = -1;
-        if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
-          reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
-        else if(!MOOSValFromString(valueToSet, msg.GetString(), "VALUE"))
-          reportRunWarning(msg.GetKey() + ": Unable to find 'value' parameter");
-        if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
+    if(key == "SET_FIOX_LOW")
+    {
+      for (unsigned int k=0;k <=7;k++){
+        m_iFioState[k] = 0;
+        if( (error = eDO(hDevice, 1, k, 0)) != 0 )
         {
-          char buffer[200];
-          sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, valueToSet);
-          reportRunWarning(buffer);
+          reportRunWarning("iLabjack::NewMail::SET_FIOX_LOW : received an error code calling eDO on FIOX " + error);
+          closeUSBConnection(hDevice);
+        }
+      }
+    }
+    else if(key == "SET_FIOX_HIGH")
+    {
+      for (unsigned int k=0;k <=7;k++){
+        m_iFioState[k] = 1;
+        if( (error = eDO(hDevice, 1, k, 1)) != 0 )
+        {
+          reportRunWarning("iLabjack::NewMail::SET_FIOX_HIGH : received an error code calling eDO on FIOX " + error);
+          closeUSBConnection(hDevice);
+        }
+      }
+    }
+    else if(key == "SET_FIOX_STATE")
+    {
+      int fioToSet = -1;
+      int valueToSet = -1;
+      if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
+        reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
+      else if(!MOOSValFromString(valueToSet, msg.GetString(), "VALUE"))
+        reportRunWarning(msg.GetKey() + ": Unable to find 'value' parameter");
+      sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, m_iFioState[fioToSet]);
+      retractRunWarning(buffer);
+      sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, m_iFioState[fioToSet]);
+      retractRunWarning(buffer);
+      if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
+      {
+        sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, valueToSet);
+        reportRunWarning(buffer);
           //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
-          if( (error = eDO(hDevice, 1, fioToSet, valueToSet)) != 0 )
-          {
-            reportRunWarning("iLabjack : received an error code calling eDO on FIOX " + error);
-            closeUSBConnection(hDevice);
-          }
-          else
-          {
-            char buffer[200];
-            sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, valueToSet);
-            reportRunWarning(buffer);
-            Notify("FIOX_STATE", msg.GetString());
-          }
-        }
-      }
-      if(key == "SET_FIOX_INPUT")
-      {
-        int fioToSet = -1;
-        if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
-          reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
-        if (fioToSet >= 0 && fioToSet <= 7)
+        if( (error = eDO(hDevice, 1, fioToSet, valueToSet)) != 0 )
         {
-          char buffer[200];
-          sprintf (buffer, "iLabjack: Calling eDI to set FIO%d as input and read state",fioToSet);
+          reportRunWarning("iLabjack : received an error code calling eDO on FIOX " + error);
+          closeUSBConnection(hDevice);
+        }
+        else
+        {
+          sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, valueToSet);
           reportRunWarning(buffer);
-
-          long lngState;
-          if( (error = eDI(hDevice, 1, fioToSet, &lngState)) != 0 )
-          {
-            sprintf (buffer, "iLabjack: received an error code calling eDI on FIO%d, error code : %ld",fioToSet, error);
-            reportRunWarning(buffer);
-            closeUSBConnection(hDevice);
-          }
-          else
-          {
-            char buffer[200];
-            sprintf (buffer, "iLabjack: FIO%d setted as input, read state = %ld\n",fioToSet, lngState);
-            reportRunWarning(buffer);
-            sprintf (buffer, "FIO=%d,VALUE=0\n",fioToSet);
-            Notify("FIOX_STATE", buffer);
-          }
+          m_iFioState[fioToSet] = valueToSet;
+          Notify("FIOX_STATE", msg.GetString());
         }
       }
+    }
+    else if(key == "SET_FIOX_INPUT")
+    {
+      int fioToSet = -1;
+      if(!MOOSValFromString(fioToSet, msg.GetString(), "FIO"))
+        reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
+      if (fioToSet >= 0 && fioToSet <= 7)
+      {
+        sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, m_iFioState[fioToSet]);
+        retractRunWarning(buffer);
+        sprintf (buffer, "iLabjack: Calling eDI to set FIO%d as input and read state",fioToSet);
+        reportRunWarning(buffer);
 
-
+        long lngState;
+        if( (error = eDI(hDevice, 1, fioToSet, &lngState)) != 0 )
+        {
+          sprintf (buffer, "iLabjack: received an error code calling eDI on FIO%d, error code : %ld",fioToSet, error);
+          reportRunWarning(buffer);
+          closeUSBConnection(hDevice);
+        }
+        else
+        {
+          sprintf (buffer, "iLabjack: FIO%d setted as input, read state = %ld\n",fioToSet, lngState);
+          reportRunWarning(buffer);
+          sprintf (buffer, "FIO=%d,VALUE=0\n",fioToSet);
+          Notify("FIOX_STATE", buffer);
+        }
+      }
+    }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("iLabjack: Unhandled Mail: " + key);
   }
@@ -214,6 +237,8 @@ void Labjack::registerVariables()
   AppCastingMOOSApp::RegisterVariables();
   Register("SET_FIOX_STATE", 0);
   Register("SET_FIOX_INPUT", 0);
+  Register("SET_FIOX_LOW", 0);
+  Register("SET_FIOX_HIGH", 0);
   // Register("FOOBAR", 0);
 }
 
@@ -233,6 +258,15 @@ bool Labjack::buildReport()
     actab << "one" << "two" << "three" << "four";
     m_msgs << actab.getFormattedString();
   #endif
+    m_msgs << "==============================================================\n";
+    m_msgs << "iLabjack FIO values :                                         \n";
+    m_msgs << "==============================================================\n";
+
+    ACTable actab(8);
+    actab << "FIO0 | FIO1 | FIO2 | FIO3 | FIO4 | FIO5 | FIO6 | FIO7";
+    actab.addHeaderLines();
+    actab << m_iFioState[0] << m_iFioState[1] << m_iFioState[2] << m_iFioState[3] << m_iFioState[4] << m_iFioState[5] << m_iFioState[6] << m_iFioState[7];
+    m_msgs << actab.getFormattedString();
 
     return true;
   }

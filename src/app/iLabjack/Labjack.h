@@ -39,6 +39,7 @@ class Labjack : public AppCastingMOOSApp
     u3CalibrationInfo caliInfo;
     int localID;
     long error;
+    int m_iFioState[8];
 
 };
 
