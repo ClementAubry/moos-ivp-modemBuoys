@@ -769,23 +769,7 @@ void Modem::ListenModemMessages()
           MOOSPause(m_iTimeBeforeTalking);
           if (m_bIsAlive && !m_bModemConfiguratonComplete && m_iInConfigTime < 11)
           {
-              if(m_bGetThirdPgrAck && m_bMtReBootHasBeenSent && m_bSentCfg)
-              {
-                  //Send mtReBoot
-                  SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
-                  SendModemConfigurationMessage(msg_ReBoot);
-                  MOOSTrace("iModem: Sending mtReBoot : ");
-                  msg_ReBoot.print_hex(200);
-                  SeaNetMsg_ReBoot msg_ReBootGlobal(0xff);
-                  SendModemConfigurationMessage(msg_ReBootGlobal);
-                  MOOSTrace("iModem: Sending mtReBoot Global : ");
-                  msg_ReBootGlobal.print_hex(200);
-                  sprintf(bufferNotify,"%s=%i",m_sRobotName,true);
-                  Notify("MODEM_CONFIGURATION_COMPLETE", bufferNotify);
-                  m_iInConfigTime = 11;
-
-              }
-              else if(!m_bGetVersionData && m_uiTimeoutUS == 0)
+              if(!m_bGetVersionData && m_uiTimeoutUS == 0)
               {
                   //Send mtSendVersion
                   SeaNetMsg_SendVersion msg_SendVersion(m_modemNodeAddr);
@@ -840,7 +824,7 @@ void Modem::ListenModemMessages()
                   m_uiTimeoutUS = 1000;
                   m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
-              else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && m_bGetThirdPgrAck && !m_bModemConfiguratonComplete)
+              else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && m_bGetThirdPgrAck && !m_bModemConfiguratonComplete && !m_bMtReBootHasBeenSent)
               {
                   //Send mtReBoot
                   SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
@@ -853,17 +837,8 @@ void Modem::ListenModemMessages()
                   msg_ReBootGlobal.print_hex(200);
                   m_bMtReBootHasBeenSent = true;
                   m_iInConfigTime = 11;
-
-                  // m_bModemConfigurationRequired = false;
-                  // m_bIsAlive = false;
-                  // m_bSentCfg = false;
-                  // m_bGetVersionData = false;
-                  // m_bGetBBUserData = false;
-                  // m_bGetFpgaVersionData = false;
-                  // m_bGetFirstPgrAck = false;
-                  // m_bGetSecondPgrAck = false;
-                  // m_bGetThirdPgrAck = false;
-                  // m_bModemConfiguratonComplete = false;
+                  sprintf(bufferNotify,"%s=%i",m_sRobotName.c_str(),1);
+                  Notify("MODEM_CONFIGURATION_COMPLETE", bufferNotify);
               }
           }
       }

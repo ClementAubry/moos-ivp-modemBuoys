@@ -22,7 +22,7 @@
 #include <string.h>
 #include <ctime>
 
-#define MESSAGE_MAX_LENGTH 4
+#define MESSAGE_MAX_LENGTH 50
 
 class Modem : public AppCastingMOOSApp
 {
