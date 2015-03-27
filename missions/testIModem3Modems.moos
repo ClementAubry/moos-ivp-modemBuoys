@@ -6,15 +6,13 @@ ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
   Run = uMS @ NewConsole = false
-  Run = pLogger @ NewConsole = false
+//  Run = pLogger @ NewConsole = false
 
   Run = iLabjack @ NewConsole = true
 
   Run = iModem @ NewConsole = true~ iModemAUV1
-  Run = iModem @ NewConsole = true~ iModemAUV2
-  Run = iModem @ NewConsole = true~ iModemAUV3
-
-  Run = pScheduler @ NewConsole = true
+//  Run = iModem @ NewConsole = true~ iModemAUV2
+//  Run = iModem @ NewConsole = true~ iModemAUV3
 }
 
 ProcessConfig = iModemAUV1
@@ -89,42 +87,4 @@ ProcessConfig = pLogger
   //WildCardOmitPattern = *_ITER_LEN
   //WildCardOmitPattern = *_STATUS
   //WildCardOmitPattern = *_DEBUG
-}
-
-ProcessConfig = pScheduler
-{
-  //generate a sequence 6 seconds long . . . .
-  // VAR1 will fire after 1 second
-  // VAR2 fire after 3 seconds
-  // VAR3 fire after 6 seconds
-  // one second later VAR1 will fire again . . repeat . . .
-  //SEQUENCE = VAR1 : RED @ 1
-  //SEQUENCE = VAR2 : ORANGE @ 3
-  //SEQUENCE = VAR3 : GREEN @ 6
-
-  //testing modem configuration, ranging and communication
-  SEQUENCE = MODEM_CONFIGURATION_REQUIRED : AUV1=master,AUV2=slave,AUV3=slave @ 1
-  //Confg process max time observed = 11.3 seconds after MODEM_CONFIGURATION_REQUIRED publishing
-  SEQUENCE = MODEM_SEND_RNG : AUV2=0 @ 13 //start at 1+11.29 = 13secs, last 2 secs ranging
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV2=range transmission @ 17 //2 secs comm
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV1=ranging acknowledge @ 21 //2 secs comm
-  SEQUENCE = MODEM_SEND_RNG : AUV3=0 @ 25 //last 2 secs ranging
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV3=range transmission @ 29 //2 secs comm
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV1=ranging acknowledge @ 34
-
-  SEQUENCE = MODEM_CONFIGURATION_REQUIRED : AUV1=slave,AUV2=master,AUV3=slave @ 35
-  SEQUENCE = MODEM_SEND_RNG : AUV1=0 @ 48
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV1=range transmission @ 52
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV2=ranging acknowledge @ 56
-  SEQUENCE = MODEM_SEND_RNG : AUV3=0 @ 60
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV3=range transmission @ 64
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV2=ranging acknowledge @ 68
-
-  SEQUENCE = MODEM_CONFIGURATION_REQUIRED : AUV1=slave,AUV2=slave,AUV3=master @ 69
-  SEQUENCE = MODEM_SEND_RNG : AUV1=0 @ 82
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV1=range transmission @ 86
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV3=ranging acknowledge @ 90
-  SEQUENCE = MODEM_SEND_RNG : AUV2=0 @ 94
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV2=range transmission @ 98
-  SEQUENCE = MODEM_SEND_MESSAGE : AUV3=ranging acknowledge @ 102
 }
