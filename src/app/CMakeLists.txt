@@ -20,7 +20,6 @@ INCLUDE_DIRECTORIES(${LOCAL_LIBRARY_DIRS})
 
 # 'u' apps
   ADD_SUBDIRECTORY(uJoystick)
-  ADD_SUBDIRECTORY(uModemScheduler)
 
 # 'i' apps
   ADD_SUBDIRECTORY(iRazorIMU)
