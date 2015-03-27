@@ -57,10 +57,16 @@ Modem::Modem()
   m_iInConfigTime = 0;
   m_bInRanging = false;
   m_sRngStr="";
+  messageReceived = "";
+  rangingValue = 0;
 
   //Configuration for Modem and magnet power supply
   m_sModemPowerOnLabjack = "FIO0";
   m_sMagnetPowerOnLabjack = "FIO1";
+
+  m_bIsModemPowered = false;
+  m_bIsMagnetPowered = false;
+
   string strMsg = m_sModemPowerOnLabjack;
   //parse string message to knwow which FIO to set
   std::size_t fioStart = strMsg.find("FIO");
@@ -163,9 +169,10 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
       string messageToSent;
       //if we found a string m_sRobotName=role, configure us as role
       if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
-        reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_SEND_MESSAGE variable");
+        reportRunWarning("iModem: Unable to find my role in MODEM_SEND_MESSAGE variable");
       else
       {
+        retractRunWarning("iModem: Unable to find my role in MODEM_SEND_MESSAGE variable");
         if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
         {
           m_Port.Write(messageToSent.c_str(), messageToSent.size());
@@ -197,6 +204,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
       {
         if (fioToSet == m_iModemPowerOnLabjack)
         {
+          m_bIsModemPowered = (valueToSet)?true:false;
           if (m_iInConfigTime == 2)
             m_iInConfigTime = 3;
           else if (m_iInConfigTime == 6)
@@ -210,6 +218,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
         }
         else if  (fioToSet == m_iMagnetPowerOnLabjack)
         {
+          m_bIsMagnetPowered = (valueToSet)?true:false;
           if (m_iInConfigTime == 4)
             m_iInConfigTime = 5;
           else if (m_iInConfigTime == 9)
@@ -298,7 +307,7 @@ bool Modem::Iterate()
       m_Port.Close();
       reportEvent("iModem: Configuring "+m_portName+" serial port at baud rate "+numstr+"\n");
       bool portOpened = m_Port.Configure(params);
-      reportEvent("iModem: Serial port configured\n");
+      // reportEvent("iModem: Serial port configured\n");
       //m_Port.SetTermCharacter('\n');
       m_Port.Flush();
       MOOSPause(1000);
@@ -393,8 +402,8 @@ bool Modem::Iterate()
         Notify("MODEM_END_CONFIG_TIME", buffer);
         sprintf(buffer,"%s=%f",m_sRobotName.c_str(),endTime-beginTime);
         Notify("MODEM_CONFIG_TIME_SECS", buffer);
-        reportEvent("iModem: Configuration Process ended\n");
-        sprintf (buffer, "time elapsed during configuration process : %f seconds",endTime-beginTime);
+        // reportEvent("iModem: Configuration Process ended\n");
+        sprintf (buffer, "iModem: Time elapsed during configuration process : %f seconds",endTime-beginTime);
         reportEvent(buffer);
         m_bModemConfigurationRequired = false;
         m_bIsAlive = false;
@@ -434,7 +443,7 @@ bool Modem::Iterate()
       m_Port.Close();
       reportEvent("iModem: Configuring "+m_portName+" serial port at baud rate "+numstr+"\n");
       bool portOpened = m_Port.Configure(params);
-      reportEvent("iModem: Serial port configured\n");
+      // reportEvent("iModem: Serial port configured\n");
       //m_Port.SetTermCharacter('\n');
       m_Port.Flush();
       MOOSPause(1000);
@@ -444,14 +453,14 @@ bool Modem::Iterate()
     {
       if(receiveRanging(message, 1))
       {
-        sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-        Notify("MODEM_RNG_RECEPTION_TIME", buffer);
-        reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
+        // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
         m_sRngStr += message;
         stripUnicode(m_sRngStr);
         stripCRLF7F(m_sRngStr);
         if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
+          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+          Notify("MODEM_RNG_RECEPTION_TIME", buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
           Notify("MODEM_RANGING_TIMEOUT", buffer);
           reportEvent("iModem: Ranging Timeout\n");
@@ -466,7 +475,6 @@ bool Modem::Iterate()
           char fundMStr[5];
           sprintf(fundMStr,"%d",foundM);
           reportEvent("iModem:  METERS extracted = "+meters+", foundM = "+fundMStr+"\n");
-          double rangingValue;
 
           if(!MOOSValFromString(rangingValue, meters, "Range"))
             reportRunWarning(meters + ": Unable to find correct string");
@@ -474,11 +482,13 @@ bool Modem::Iterate()
           {
             /************ rangingValue is a double that contain the value returned by ranging function ******************/
             // printf("ranging return [%s]******************************************************\n",meters.c_str());
+            sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+            Notify("MODEM_RNG_RECEPTION_TIME", buffer);
             sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
             Notify("MODEM_RANGING_RECEIVED", m_sRngStr);
             sprintf(buffer,"%s=%f",m_sRobotName.c_str(),rangingValue);
             Notify("MODEM_RANGING_VALUE", buffer);
-            reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
+            // reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
             // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
             m_sRngStr="";
             m_bInRanging = false;
@@ -486,13 +496,13 @@ bool Modem::Iterate()
         }
       }
     }
-    else if (receiveMessage(message, 1))
+    else if (receiveMessage(messageReceived, 1))
     {
       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
       Notify("MODEM_MSG_RECEPTION_TIME", buffer);
-      reportEvent("iModem: Receiving ["+message+"]\n");
+      // reportEvent("iModem: Receiving ["+message+"]\n");
         // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
-      sprintf(buffer,"%s=%s",m_sRobotName.c_str(),message.c_str());
+      sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
     }
 
@@ -528,19 +538,19 @@ bool Modem::OnStartUp()
 
     if(param == "SERIAL_PORT_NAME")
     {
-      reportEvent("iModem: Using "+value+" serial port\n");
+      // reportEvent("iModem: Using "+value+" serial port\n");
       m_portName = value;
       handled = true;
     }
     else if(param == "BAUD_RATE_CONF")
     {
-      reportEvent("iModem: serial port baud rate conf setted to "+value+"\n");
+      // reportEvent("iModem: serial port baud rate conf setted to "+value+"\n");
       m_baudrate_conf = atoi(value.c_str());
       handled = true;
     }
     else if(param == "BAUD_RATE_COMM")
     {
-      reportEvent("iModem: serial port baud rate comm setted to "+value+"\n");
+      // reportEvent("iModem: serial port baud rate comm setted to "+value+"\n");
       m_baudrate_comm = atoi(value.c_str());
       handled = true;
     }
@@ -596,9 +606,9 @@ bool Modem::OnStartUp()
   }
   char numstr[21]; // enough to hold all numbers up to 64-bits
   sprintf(numstr, "%d", m_baudrate_comm);
-  reportEvent("iModem: Openning "+m_portName+" serial port at baud rate "+numstr+"\n");
+  // reportEvent("iModem: Openning "+m_portName+" serial port at baud rate "+numstr+"\n");
   bool portOpened = m_Port.Create(m_portName.c_str(), m_baudrate_comm);
-  reportEvent("iModem: Serial port openned\n");
+  // reportEvent("iModem: Serial port openned\n");
   //m_Port.SetTermCharacter('\n');
   m_Port.Flush();
   m_timewarp = GetMOOSTimeWarp();
@@ -916,13 +926,22 @@ bool Modem::buildReport()
     m_msgs << "iModemStatus :                                                \n";
     m_msgs << "==============================================================\n";
 
-    ACTable actab(6);
-    actab << "Serial Port | Baudrate | Modem Output | Magnet Output | Modem role | Config process launched";
+    ACTable actab(5);
+    actab << "SerialPort | Baudrate | ModemOutput | MagnetOutput | In config process";
     actab.addHeaderLines();
-    string modemRoleRequired = (m_iModemRoleRequired)?"slave":"master";
     string confProcLaunched = (m_bModemConfigurationRequired)?"yes":"no";
-    actab << m_portName << m_Port.GetBaudRate() << m_sModemPowerOnLabjack << m_sMagnetPowerOnLabjack << modemRoleRequired << confProcLaunched;
-    m_msgs << actab.getFormattedString();
+    actab << m_portName << m_Port.GetBaudRate() << m_sModemPowerOnLabjack << m_sMagnetPowerOnLabjack << confProcLaunched;
+m_msgs << actab.getFormattedString();
+    m_msgs << "\n==============================================================\n";
+
+ACTable actab2(5);
+    actab2 << "ModemPower | MagnetPower | Last Message | Last Range | Role ";
+    actab2.addHeaderLines();
+    string modemPowered = (m_bIsModemPowered)?"yes":"no";
+    string magnetPowered = (m_bIsMagnetPowered)?"yes":"no";
+    string modemRoleRequired = (m_iModemRoleRequired)?"slave":"master";
+    actab2 << modemPowered << magnetPowered << messageReceived << rangingValue << modemRoleRequired;
+    m_msgs << actab2.getFormattedString();
 
   return true;
 }

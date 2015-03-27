@@ -87,12 +87,16 @@ class Modem : public AppCastingMOOSApp
     //Configuration for Modem and magnet power supply
     std::string m_sModemPowerOnLabjack;
     int m_iModemPowerOnLabjack;
+    bool m_bIsModemPowered;
     std::string m_sMagnetPowerOnLabjack;
     int m_iMagnetPowerOnLabjack;
+    bool m_bIsMagnetPowered;
 
     int m_iInConfigTime;
     bool m_bInRanging;
     std::string m_sRngStr;
+    std::string messageReceived;
+    double rangingValue;
 
     //Thread created for modem configuration
     CMOOSThread   m_serial_thread_conf;
