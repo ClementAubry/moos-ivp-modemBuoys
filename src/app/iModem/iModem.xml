@@ -16,7 +16,20 @@
 
     <documentation>
       <synopsis>
-        ...
+        iModem App is an interface with Tritech Micron Modem.
+        Those modem could be configured to master or slave. To do so, hold a magnet near main port when powering up and use Seanet.exe to configure the modem.
+
+        This App is adapted to Modem configuration with an electromagnet.
+
+        CAUTION! Tritech Micron Modem in configuration mode communicate through serial baudrate 57600 htat is not referenced for MoOOSLinuxSerialPort.
+
+        Please update MOOSCore/Core/libMOOS/Utils/MOOSLinuxSerialPort.cpp and add
+        case 57600:     nLinuxBaudRate = B57600;  break;
+
+        In function bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
+
+        Finally Rebuild moos
+
       </synopsis>
       <interface>
         <subscriptions>
