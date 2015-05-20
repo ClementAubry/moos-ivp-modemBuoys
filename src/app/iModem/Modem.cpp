@@ -49,6 +49,7 @@ Modem::Modem()
   m_bGetFirstPgrAck = false;
   m_bGetSecondPgrAck = false;
   m_bGetThirdPgrAck = false;
+  m_bMtReBootHasBeenSent = false;
   m_bModemConfiguratonComplete = false;
 
   m_iModemRoleRequired = 0; //0 = master, 1 = slave
@@ -415,6 +416,7 @@ bool Modem::Iterate()
         m_bGetSecondPgrAck = false;
         m_bGetThirdPgrAck = false;
         m_bModemConfiguratonComplete = false;
+        m_bMtReBootHasBeenSent = false;
         break;
       default:
         MOOSTrace("ModemManager: Lost in config mode\n");
@@ -508,6 +510,19 @@ bool Modem::Iterate()
 
 
   }
+
+
+  // std::cout<< "config : [" <<m_bModemConfigurationRequired<<"|"<<
+  //                            m_bSentCfg <<"|"<<
+  //                            m_bIsAlive<<"|"<<
+  //                            m_bGetVersionData<<"|"<<
+  //                            m_bGetBBUserData<<"|"<<
+  //                            m_bGetFpgaVersionData<<"|"<<
+  //                            m_bGetFirstPgrAck<<"|"<<
+  //                            m_bGetSecondPgrAck<<"|"<<
+  //                            m_bGetThirdPgrAck<<"|"<<
+  //                            m_bMtReBootHasBeenSent<<"|"<<
+  //                            m_bModemConfiguratonComplete<<"]"<<std::endl;
 
   AppCastingMOOSApp::PostReport();
   return true;
@@ -698,6 +713,24 @@ void Modem::ListenModemMessages()
               }
               else if (m_bSentCfg) //mtAlive HeadInf = 0xC0 => have to send first mtErasesector
               {
+                // if(m_bGetThirdPgrAck)
+                // {
+                //   //The second configuration asked
+                //   //Send mtReBoot
+                //   SeaNetMsg_ReBoot msg_ReBoot(m_modemNodeAddr);
+                //   SendModemConfigurationMessage(msg_ReBoot);
+                //   MOOSTrace("iModem: Sending mtReBoot : ");
+                //   msg_ReBoot.print_hex(200);
+                //   SeaNetMsg_ReBoot msg_ReBootGlobal(0xff);
+                //   SendModemConfigurationMessage(msg_ReBootGlobal);
+                //   MOOSTrace("iModem: Sending mtReBoot Global : ");
+                //   msg_ReBootGlobal.print_hex(200);
+                //   m_bMtReBootHasBeenSent = true;
+                //   m_iInConfigTime = 11;
+                //   sprintf(bufferNotify,"%s=%i",m_sRobotName.c_str(),1);
+                //   Notify("MODEM_CONFIGURATION_COMPLETE", bufferNotify);
+                // }
+                // else
                   MOOSTrace("iModem: Modem says by mtAlive that config has been sent (mtAlive HEadInf.sentCfg = 1) \n");
               }
           }
