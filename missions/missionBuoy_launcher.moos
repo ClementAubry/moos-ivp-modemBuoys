@@ -2,7 +2,7 @@
 ServerHost = localhost // l’adresse du serveur
 ServerPort = 9000 // le port de la communauté
 
-Community = AUV1 // le nom de la communauté MOOS
+Community = LAUNCHER // le nom de la communauté MOOS
 
 ProcessConfig = ANTLER
 {
