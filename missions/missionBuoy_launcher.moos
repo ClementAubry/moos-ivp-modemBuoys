@@ -1,0 +1,43 @@
+
+ServerHost = localhost // l’adresse du serveur
+ServerPort = 9000 // le port de la communauté
+
+Community = AUV1 // le nom de la communauté MOOS
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  Run = uMS @ NewConsole = false
+  Run = pLogger @ NewConsole = false
+  Run = pShare @ NewConsole = true
+}
+
+ProcessConfig=pShare
+{
+  //a verbose way of sharing X, calling it Y and sending
+  //on mulitcast_8
+  Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
+
+  //we can do this one at a time using the route directive
+  Input = route=multicast_6&multicast_7&multicast_8
+}
+ProcessConfig = pLogger
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  File = MODEM_CONF_TEST
+
+  //SyncLog = false
+  //AsyncLog = true
+
+  PATH = ./data
+
+  //LogAuxSrc = true
+  WildCardLogging = true
+  WildCardPattern = MODEM_*
+  //WildCardOmitPattern = *_ITER_GAP
+  //WildCardOmitPattern = *_ITER_LEN
+  //WildCardOmitPattern = *_STATUS
+  //WildCardOmitPattern = *_DEBUG
+}

@@ -1,0 +1,27 @@
+
+ServerHost = localhost
+ServerPort = 9000
+
+Community = V1
+
+ProcessConfig = ANTLER
+{
+
+  Run = MOOSDB  @ NewConsole = false
+  Run = uMS @ NewConsole = false
+  Run = pMOOSBridge @ NewConsole = true
+
+}
+
+ProcessConfig= pMOOSBridge
+{
+	UDPListen = 9100
+
+// Share [DB_UPTIME,DB_CLIENTS] from this community with V2 community at 172.20.29.83 via UDP (port = UDPListen from community V2). V1 [DB_UPTIME,DB_CLIENTS] will appear as [V1_UP,V1_DB_CLIENTS] in V2 community.
+	UDPSHARE= [DB_UPTIME,DB_CLIENTS]->V2@172.20.29.83:9200 [V1_UP,V1_DB_CLIENTS]
+
+	UDPSHARE= [DB_TIME]->ALL@BROADCAST:9200 [V1_DB_TIME_BROADCASTED]
+	
+// Share [DB_TIME] from this community with V2 community at 172.20.29.83 via TCP (port = MOOSDB port). V1 DB_TIME will appear as V1_DB_TIME in V2 community.
+	//SHARE=[DB_TIME]->V2@172.20.29.83:9000 [V1_DB_TIME]
+}

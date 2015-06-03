@@ -1,0 +1,24 @@
+
+ServerHost = localhost
+ServerPort = 9000
+
+Community = V1
+
+ProcessConfig = ANTLER
+{
+
+  Run = MOOSDB  @ NewConsole = false
+  Run = uMS @ NewConsole = false
+  Run = pShare @ NewConsole = true
+
+}
+
+ProcessConfig=pShare
+{
+	//a verbose way of sharing X, calling it Y and sending
+	//on mulitcast_8
+	Output = src_name =DB_TIME,dest_name=V1_DB_TIME,route=multicast_8
+
+	//we can do this one at a time using the route directive
+	Input = route=multicast_6&multicast_7
+}
