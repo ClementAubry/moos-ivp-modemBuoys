@@ -12,8 +12,13 @@ ProcessConfig = ANTLER
   Run = pShare @ NewConsole = false
   Run = uTimerScript @ NewConsole = false
 
+<<<<<<< HEAD
   Run = iLabjack @ NewConsole = false
   Run = iModem @ NewConsole = false
+=======
+  Run = iLabjack @ NewConsole = true
+  Run = iModem @ NewConsole = true
+>>>>>>> 5ee03a3364ab50867213ec9a3766ef6ef9b4832a
 
 }
 
