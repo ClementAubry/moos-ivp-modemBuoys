@@ -9,11 +9,11 @@ ProcessConfig = ANTLER
   Run = MOOSDB  @ NewConsole = false
   Run = uMS @ NewConsole = false
   Run = pLogger @ NewConsole = false
-  Run = pShare @ NewConsole = true
-  Run = uTimerScript @ NewConsole = true
+  Run = pShare @ NewConsole = false
+  Run = uTimerScript @ NewConsole = false
 
-  Run = iLabjack @ NewConsole = true
-  //Run = iModem @ NewConsole = true
+  Run = iLabjack @ NewConsole = false
+  Run = iModem @ NewConsole = false
 
 }
 
