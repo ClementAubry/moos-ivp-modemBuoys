@@ -67,7 +67,7 @@ ProcessConfig = uTimerScript
   // A point when the script is reset                           
   reset_time     = 24     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
-  reset_max      = nolimit  // or in range [0,inf) 
+  reset_max      = 10  // or in range [0,inf) 
 }
 ProcessConfig = pLogger
 {
