@@ -63,11 +63,11 @@ ProcessConfig = uTimerScript
   // Event(s) are the key components of the script
   event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master", time=0
   event          = var=MODEM_SEND_RNG, val="AUV1=0", time=10
-  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave", time=12
-  event          = var=MODEM_SEND_RNG, val="AUV1=0", time=22
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave", time=15
+  event          = var=MODEM_SEND_RNG, val="AUV1=0", time=25
 
   // A point when the script is reset                           
-  reset_time     = 24     // or {all-posted} or range (0,inf)
+  reset_time     = 30     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
   reset_max      = 20  // or in range [0,inf) 
 }
