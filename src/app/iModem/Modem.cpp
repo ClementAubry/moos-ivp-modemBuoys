@@ -487,10 +487,15 @@ bool Modem::Iterate()
           Notify("MODEM_RNG_RECEPTION_TIME", buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
           Notify("MODEM_RANGING_TIMEOUT", buffer);
-          reportEvent("iModem: Ranging Timeout\n");
+          reportEvent("iModem: Ranging Timeout (from modem)\n");
           // MOOSTrace("iModem: Ranging Timeout******************************************************\n");
           m_sRngStr="";
           m_bInRanging = false;
+          if (m_thread_timeout_rng.IsThreadRunning())
+          {
+            m_thread_timeout_rng.Stop();
+            m_uiRngTimeoutUS = 0;
+          }
         }
         else if (m_sRngStr.compare(0,6,"Range=") == 0 && m_sRngStr.size() >= 10)
         {
@@ -516,6 +521,11 @@ bool Modem::Iterate()
             // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
             m_sRngStr="";
             m_bInRanging = false;
+            if (m_thread_timeout_rng.IsThreadRunning())
+            {
+              m_thread_timeout_rng.Stop();
+              m_uiRngTimeoutUS = 0;
+            }
           }
         }
       }
