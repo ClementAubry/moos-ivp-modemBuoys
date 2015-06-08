@@ -263,7 +263,13 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
-          reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+          {
+            string  trr = (m_bModemConfigurationRequired)?"yes":"no";
+            reportEvent("iModem: in config: ["+trr+"].\n");
+            string bdrt = (m_Port.GetBaudRate() ==9600)?"9600":"57600";
+            // reportEvent("iModem: baud rate: ["+bdrt+"].\n")
+;            reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+          }
       }
     }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
