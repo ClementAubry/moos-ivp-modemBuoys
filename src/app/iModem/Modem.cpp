@@ -55,6 +55,7 @@ Modem::Modem()
   m_iModemRoleRequired = 0; //0 = master, 1 = slave
   m_uiTimeoutUS = 0;
   m_uiRngTimeoutUS = 0;
+  m_uiRngTimeoutUS_param = 0;
   m_iTimeBeforeTalking = 30;
   m_iInConfigTime = 0;
   m_bInRanging = false;
@@ -472,7 +473,7 @@ bool Modem::Iterate()
     {
       if (!m_thread_timeout_rng.IsThreadRunning())
       {
-        m_uiRngTimeoutUS = 2000;
+        m_uiRngTimeoutUS = m_uiRngTimeoutUS_param;
         m_thread_timeout_rng.Start();
       }
       if(receiveRanging(message, 1))
@@ -644,6 +645,11 @@ bool Modem::OnStartUp()
     else if(param == "ROBOT_NAME")
     {
       m_sRobotName = value;
+      handled = true;
+    }
+    else if(param == "MODEM_RANGING_TIMEOUT_US")
+    {
+      m_uiRngTimeoutUS_param = atoi(value.c_str());
       handled = true;
     }
 

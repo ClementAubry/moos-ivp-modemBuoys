@@ -30,6 +30,8 @@ ProcessConfig = iModemAUV1
   MODEM_LJ_POWER = FIO0
   MAGNET_LJ_POWER = FIO1
 
+  MODEM_RANGING_TIMEOUT_US = 4000
+
   ROBOT_NAME = AUV1
 }
 ProcessConfig = iModemAUV2
@@ -45,6 +47,8 @@ ProcessConfig = iModemAUV2
   MODEM_LJ_POWER = FIO2
   MAGNET_LJ_POWER = FIO3
 
+  MODEM_RANGING_TIMEOUT_US = 4000
+
   ROBOT_NAME = AUV2
 }
 ProcessConfig = iModemAUV3
@@ -59,6 +63,8 @@ ProcessConfig = iModemAUV3
 
   MODEM_LJ_POWER = FIO4
   MAGNET_LJ_POWER = FIO5
+
+  MODEM_RANGING_TIMEOUT_US = 4000
 
   ROBOT_NAME = AUV3
 }

@@ -84,6 +84,7 @@ class Modem : public AppCastingMOOSApp
     //Value of timeout applied when sending some configuration commands to the modem
     unsigned int  m_uiTimeoutUS;
     unsigned int  m_uiRngTimeoutUS;
+    unsigned int  m_uiRngTimeoutUS_param;
     int           m_iTimeBeforeTalking;
 
     //Configuration for Modem and magnet power supply
