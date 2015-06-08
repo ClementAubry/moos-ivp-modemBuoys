@@ -53,9 +53,9 @@ ProcessConfig = uTimerScript
   CommsTick = 4 
 
   // If true script is paused upon launch 
-  paused         = false                                                              
+  //paused         = false                                                              
   // Logic condition that must be met for script to be unpaused 
-  //condition      = MODEM_MISSION_START = true
+  condition      = MODEM_MISSION_START = true
   // Seconds added to each event time, on each script pass      
   delay_reset    = 0                                            
   // Seconds added to each event time, on first pass only       
@@ -67,7 +67,7 @@ ProcessConfig = uTimerScript
   // A point when the script is reset                           
   reset_time     = 24     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
-  reset_max      = 10  // or in range [0,inf) 
+  reset_max      = 20  // or in range [0,inf) 
 }
 ProcessConfig = pLogger
 {
