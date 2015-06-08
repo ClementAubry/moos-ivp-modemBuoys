@@ -306,7 +306,11 @@ bool Modem::Iterate()
   if(m_bModemConfigurationRequired)
   {
     if (m_thread_timeout_rng.IsThreadRunning())
+    {
       m_thread_timeout_rng.Stop();
+      m_bInRanging = false;
+      reportEvent("iModem: Ranging Timeout by thread because starting config\n");
+    }
     //Configure serial port in config mode (baudrate = 57600)
     if (m_Port.GetBaudRate() == 9600)
     {
