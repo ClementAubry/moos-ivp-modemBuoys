@@ -54,6 +54,7 @@ Modem::Modem()
 
   m_iModemRoleRequired = 0; //0 = master, 1 = slave
   m_uiTimeoutUS = 0;
+  m_uiRngTimeoutUS = 0;
   m_iTimeBeforeTalking = 30;
   m_iInConfigTime = 0;
   m_bInRanging = false;
@@ -103,12 +104,15 @@ Modem::Modem()
     reportRunWarning("iModem: Modem thread listen initialization error...\n");
   if (!m_serial_thread_tempo.Initialise(listen_Modem_tempo_thread_func, (void*)this))
     reportRunWarning("iModem: Modem thread tempo initialization error...\n");
+  if (!m_thread_timeout_rng.Initialise(listen_thread_timeout_rng_func, (void*)this))
+    reportRunWarning("iModem: Rng timeout thread initialization error...\n");
 }
 Modem::~Modem()
 {
   reportEvent("iModem: stopping threads.\n");
   m_serial_thread_conf.Stop();
   m_serial_thread_tempo.Stop();
+  m_thread_timeout_rng.Stop();
   //Stop Magnet and modem alimentation
   char buffer[16]; //To publish "FIO=x" string
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack,0);
@@ -249,6 +253,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
         reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_SEND_RNG variable");
       else
       {
+        //Start timeout timer for rng
         string ranging("rng\n");
         if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
         {
@@ -300,6 +305,8 @@ bool Modem::Iterate()
   string message;
   if(m_bModemConfigurationRequired)
   {
+    if (m_thread_timeout_rng.IsThreadRunning())
+      m_thread_timeout_rng.Stop();
     //Configure serial port in config mode (baudrate = 57600)
     if (m_Port.GetBaudRate() == 9600)
     {
@@ -459,6 +466,11 @@ bool Modem::Iterate()
     }
     if(m_bInRanging)
     {
+      if (!m_thread_timeout_rng.IsThreadRunning())
+      {
+        m_uiRngTimeoutUS = 2000;
+        m_thread_timeout_rng.Start();
+      }
       if(receiveRanging(message, 1))
       {
         // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
@@ -646,6 +658,23 @@ bool Modem::OnStartUp()
   return true;
 }
 
+//---------------------------------------------------------
+// Procedure: ModemTempoFunction
+void Modem::RngTimeoutFunction()
+{
+  if (!m_serial_thread_tempo.IsQuitRequested() && m_uiRngTimeoutUS != 0)
+  {
+    MOOSPause(m_uiRngTimeoutUS);
+    m_uiRngTimeoutUS = 0;
+    char buffer[100];
+    sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
+    Notify("MODEM_RANGING_TIMEOUT", buffer);
+    reportEvent("iModem: Ranging Timeout by thread\n");
+    // MOOSTrace("iModem: Ranging Timeout******************************************************\n");
+    m_sRngStr="";
+    m_bInRanging = false;
+  }
+}
 //---------------------------------------------------------
 // Procedure: ModemTempoFunction
 void Modem::ModemTempoFunction()

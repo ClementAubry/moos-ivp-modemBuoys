@@ -38,6 +38,7 @@ class Modem : public AppCastingMOOSApp
 
   protected: // Modem functions
     void ModemTempoFunction();
+    void RngTimeoutFunction();
     void ListenModemMessages();
     bool receiveMessage(std::string & message, double reception_timeout);
     bool receiveRanging(std::string & message, double reception_timeout);
@@ -82,6 +83,7 @@ class Modem : public AppCastingMOOSApp
     int           m_iModemRoleRequired;
     //Value of timeout applied when sending some configuration commands to the modem
     unsigned int  m_uiTimeoutUS;
+    unsigned int  m_uiRngTimeoutUS;
     int           m_iTimeBeforeTalking;
 
     //Configuration for Modem and magnet power supply
@@ -121,6 +123,19 @@ class Modem : public AppCastingMOOSApp
       {
         std::cout<<"Timeout configuration thread launched"<<std::endl;
         pModem->ModemTempoFunction();
+        return true;
+      }
+      else return false;
+    }
+    //Thread created for timeouts, probably not the right way to do but it works like a charm
+    CMOOSThread   m_thread_timeout_rng;
+    static bool listen_thread_timeout_rng_func(void *pModemObject)
+    {
+      Modem* pModem = static_cast<Modem*> (pModemObject);
+      if (pModem)
+      {
+        std::cout<<"Rng timeout thread launched"<<std::endl;
+        pModem->RngTimeoutFunction();
         return true;
       }
       else return false;
