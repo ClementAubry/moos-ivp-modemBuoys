@@ -536,6 +536,7 @@ bool Modem::Iterate()
           }
         }
       }
+      reportEvent("iModem: InRanging), not receiving_1\n");      
     }
     else if (receiveMessage(messageReceived, 1))
     {
@@ -547,9 +548,9 @@ bool Modem::Iterate()
       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
     }
-
-
+    reportEvent("iModem: InRanging), not receiving_2\n");
   }
+  reportEvent("iModem: InRanging), not receiving_3\n"); 
 
 
   // std::cout<< "config : [" <<m_bModemConfigurationRequired<<"|"<<
