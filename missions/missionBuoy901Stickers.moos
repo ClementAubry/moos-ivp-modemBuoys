@@ -7,15 +7,15 @@ Community = AUV1 // le nom de la communauté MOOS
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
-  Run = uMS @ NewConsole = false
+  //Run = uMS @ NewConsole = false
   Run = pLogger @ NewConsole = false
   Run = pShare @ NewConsole = false
   Run = uTimerScript @ NewConsole = false
 
   Run = iLabjack @ NewConsole = false
-  Run = iModem @ NewConsole = 
+  Run = iModem @ NewConsole = false
 
-  Run = uMACView @ NewConsole = false
+  //Run = uMACView @ NewConsole = false
 
 }
 
