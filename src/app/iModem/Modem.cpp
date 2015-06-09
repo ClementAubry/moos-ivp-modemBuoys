@@ -962,14 +962,17 @@ void Modem::ListenModemMessages()
 // Procedure: receiveRanging
 bool Modem::receiveRanging(string &message, double reception_timeout)
 {
+  reportEvent("iModem: in receiveRanging.\n");
   //Ranging response could contain maximum 13 characters : Range=500.0m
   char message_char[13]={0};
   message = "";
   if(m_Port.ReadNWithTimeOut(message_char, MESSAGE_MAX_LENGTH,reception_timeout))
   {
     message = message_char;
+  reportEvent("iModem: going out from receiveRanging with true value.\n");
     return true;
   }
+  reportEvent("iModem: going out from receiveRanging with false value.\n");
   return false;
 }
 //------------------------------------------------------------
