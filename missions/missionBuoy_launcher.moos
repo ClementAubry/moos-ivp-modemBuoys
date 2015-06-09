@@ -9,7 +9,7 @@ ProcessConfig = ANTLER
   Run = MOOSDB  @ NewConsole = false
   //Run = uMS @ NewConsole = false
   Run = pLogger @ NewConsole = false
-  Run = pShare @ NewConsole = true
+  Run = pShare @ NewConsole = false
   //Run = uMACView @ NewConsole = false
 }
 
