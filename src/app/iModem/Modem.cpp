@@ -75,7 +75,7 @@ Modem::Modem()
   std::size_t fioStart = strMsg.find("FIO");
   if (fioStart!=std::string::npos)
   {
-    char buffer[16];
+    char buffer[16] = {0};
     std::size_t length = strMsg.copy(buffer,1,fioStart+3);
     buffer[length]='\0';
     m_iModemPowerOnLabjack = atoi(buffer);
@@ -90,7 +90,7 @@ Modem::Modem()
   fioStart = strMsg.find("FIO");
   if (fioStart!=std::string::npos)
   {
-    char buffer[16];
+    char buffer[16] = {0};
     std::size_t length = strMsg.copy(buffer,1,fioStart+3);
     buffer[length]='\0';
     m_iMagnetPowerOnLabjack = atoi(buffer);
@@ -115,7 +115,7 @@ Modem::~Modem()
   m_serial_thread_tempo.Stop();
   m_thread_timeout_rng.Stop();
   //Stop Magnet and modem alimentation
-  char buffer[16]; //To publish "FIO=x" string
+  char buffer[16] = {0}; //To publish "FIO=x" string
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack,0);
   Notify("SET_FIOX_STATE",buffer);
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack,0);
@@ -183,7 +183,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
         {
           m_Port.Write(messageToSent.c_str(), messageToSent.size());
           reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
-          char buffer[100];
+          char buffer[100] = {0};
           sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
           Notify("MODEM_MSG_EMISSION_TIME",buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
@@ -240,7 +240,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     }
     else if(key == "MODEM_STOP_ALIM")
     {
-      char buffer[16]; //To publish "FIO=x;VALUE=y;" string
+      char buffer[16] = {0}; //To publish "FIO=x;VALUE=y;" string
       sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack,0);
       Notify("SET_FIOX_STATE",buffer);
       sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack,0);
@@ -260,7 +260,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
         {
           m_Port.Write(ranging.c_str(), ranging.size());
           reportEvent("iModem: Message ["+ranging+"] sent.\n");
-          char buffer[100];
+          char buffer[100] = {0};
           sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
           Notify("MODEM_RNG_EMISSION_TIME", buffer);
           sprintf(buffer,"%s=%i",m_sRobotName.c_str(),true);
@@ -301,7 +301,7 @@ bool Modem::OnConnectToServer()
 bool Modem::Iterate()
 {
   AppCastingMOOSApp::Iterate();
-  char buffer[100];
+  char buffer[100] = {0};
   double temps_secs;
   string message;
   if(m_bModemConfigurationRequired)
@@ -318,7 +318,7 @@ bool Modem::Iterate()
       //Strange code to put an int to a string...
       string tt;
       string ttt("BAUDRATE=");
-      char numstr[21]; // enough to hold all numbers up to 64-bits
+      char numstr[21] = {0}; // enough to hold all numbers up to 64-bits
       sprintf(numstr, "%d", m_baudrate_conf);
       tt = ttt + numstr;
       STRING_LIST params;
@@ -455,7 +455,7 @@ bool Modem::Iterate()
       //Strange code to put an int to a string...
       string tt;
       string ttt("BAUDRATE=");
-      char numstr[21]; // enough to hold all numbers up to 64-bits
+      char numstr[21]={0}; // enough to hold all numbers up to 64-bits
       sprintf(numstr, "%d", m_baudrate_comm);
       tt = ttt + numstr;
       STRING_LIST params;
@@ -502,7 +502,7 @@ bool Modem::Iterate()
         {
           unsigned int foundM = m_sRngStr.find_last_of('m');
           string meters = m_sRngStr.substr (0,foundM);
-          char fundMStr[5];
+          char fundMStr[5]={0};
           sprintf(fundMStr,"%d",foundM);
           reportEvent("iModem:  METERS extracted = "+meters+", foundM = "+fundMStr+"\n");
 
@@ -610,7 +610,7 @@ bool Modem::OnStartUp()
       std::size_t fioStart = strMsg.find("FIO");
       if (fioStart!=std::string::npos)
       {
-        char buffer[16];
+        char buffer[16] = {0};
         std::size_t length = strMsg.copy(buffer,1,fioStart+3);
         buffer[length]='\0';
         m_iModemPowerOnLabjack = atoi(buffer);
@@ -630,7 +630,7 @@ bool Modem::OnStartUp()
       std::size_t fioStart = strMsg.find("FIO");
       if (fioStart!=std::string::npos)
       {
-        char buffer[16];
+        char buffer[16] = {0};
         std::size_t length = strMsg.copy(buffer,1,fioStart+3);
         buffer[length]='\0';
         m_iMagnetPowerOnLabjack = atoi(buffer);
@@ -657,7 +657,7 @@ bool Modem::OnStartUp()
     if(!handled)
       reportUnhandledConfigWarning(orig);
   }
-  char numstr[21]; // enough to hold all numbers up to 64-bits
+  char numstr[21]={0}; // enough to hold all numbers up to 64-bits
   sprintf(numstr, "%d", m_baudrate_comm);
   // reportEvent("iModem: Openning "+m_portName+" serial port at baud rate "+numstr+"\n");
   bool portOpened = m_Port.Create(m_portName.c_str(), m_baudrate_comm);
@@ -667,7 +667,7 @@ bool Modem::OnStartUp()
   m_timewarp = GetMOOSTimeWarp();
 
   //Power down magnet
-  char buffer[16]; //To publish "FIO=x,VALUE=y" string
+  char buffer[16] = {0}; //To publish "FIO=x,VALUE=y" string
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
   Notify("SET_FIOX_STATE",buffer);
   //Power up modem
@@ -686,7 +686,7 @@ void Modem::RngTimeoutFunction()
   {
     MOOSPause(m_uiRngTimeoutUS);
     m_uiRngTimeoutUS = 0;
-    char buffer[100];
+    char buffer[100] = {0};
     sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
     Notify("MODEM_RANGING_TIMEOUT", buffer);
     reportEvent("iModem: Ranging Timeout by thread\n");
@@ -710,9 +710,9 @@ void Modem::ModemTempoFunction()
 void Modem::ListenModemMessages()
 {
   const int buf_size = 512;
-  char buf[buf_size];
+  char buf[buf_size]={0};
   string sBuf;
-  char bufferNotify[100];
+  char bufferNotify[100]={0};
 
   union HeadInf {
       char c;
@@ -956,7 +956,7 @@ void Modem::ListenModemMessages()
 bool Modem::receiveRanging(string &message, double reception_timeout)
 {
   //Ranging response could contain maximum 13 characters : Range=500.0m
-  char message_char[13];
+  char message_char[13]={0};
   message = "";
   if(m_Port.ReadNWithTimeOut(message_char, MESSAGE_MAX_LENGTH,reception_timeout))
   {
@@ -969,7 +969,7 @@ bool Modem::receiveRanging(string &message, double reception_timeout)
 // Procedure: receiveMessage
 bool Modem::receiveMessage(string &message, double reception_timeout)
 {
-    char message_char[MESSAGE_MAX_LENGTH];
+    char message_char[MESSAGE_MAX_LENGTH]={0};
     message = "";
 
     if(m_Port.ReadNWithTimeOut(message_char, MESSAGE_MAX_LENGTH,reception_timeout))
