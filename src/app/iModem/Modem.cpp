@@ -266,10 +266,12 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           sprintf(buffer,"%s=%i",m_sRobotName.c_str(),true);
           Notify("MODEM_RNG_SENT",buffer);
           m_bInRanging = true;
+          reportEvent("iModem: rng sent, ranging mode activated.\n");
           retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
         {
+          reportEvent("iModem: rng sent, in else statement.\n");
           string  trr = (m_bModemConfigurationRequired)?"yes":"no";
           reportEvent("iModem: in config: ["+trr+"].\n");
           string bdrt = (m_Port.GetBaudRate() ==9600)?"9600":"57600";
@@ -281,7 +283,6 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
   }
-
   return true;
 }
 
@@ -306,6 +307,7 @@ bool Modem::Iterate()
   string message;
   if(m_bModemConfigurationRequired)
   {
+    reportEvent("iModem: conf required.\n");
     if (m_thread_timeout_rng.IsThreadRunning())
     {
       m_thread_timeout_rng.Stop();
@@ -471,6 +473,7 @@ bool Modem::Iterate()
     }
     if(m_bInRanging)
     {
+      reportEvent("iModem: if(m_bInRanging).\n");
       if (!m_thread_timeout_rng.IsThreadRunning())
       {
         m_uiRngTimeoutUS = m_uiRngTimeoutUS_param;
@@ -533,6 +536,7 @@ bool Modem::Iterate()
     }
     else if (receiveMessage(messageReceived, 1))
     {
+      reportEvent("iModem: elseif(m_bInRanging) and message received.\n");
       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
       Notify("MODEM_MSG_RECEPTION_TIME", buffer);
       // reportEvent("iModem: Receiving ["+message+"]\n");
