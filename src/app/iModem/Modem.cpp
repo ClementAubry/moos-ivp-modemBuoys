@@ -505,7 +505,7 @@ bool Modem::Iterate()
         }
         else if (m_sRngStr.compare(0,6,"Range=") == 0 && m_sRngStr.size() >= 10)
         {
-          reportEvent("iModem: m_sRngStr.compare(0,6,"Range=") == 0 && m_sRngStr.size() >= 10");
+          reportEvent("iModem: m_sRngStr.compare(0,6,\"Range=\") == 0 && m_sRngStr.size() >= 10");
           unsigned int foundM = m_sRngStr.find_last_of('m');
           string meters = m_sRngStr.substr (0,foundM);
           char fundMStr[5]={0};
