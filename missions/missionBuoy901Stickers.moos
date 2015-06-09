@@ -13,7 +13,9 @@ ProcessConfig = ANTLER
   Run = uTimerScript @ NewConsole = false
 
   Run = iLabjack @ NewConsole = false
-  Run = iModem @ NewConsole = false
+  Run = iModem @ NewConsole = 
+
+  Run = uMACView @ NewConsole = false
 
 }
 
@@ -97,4 +99,12 @@ ProcessConfig = pLogger
   //WildCardOmitPattern = *_ITER_LEN
   //WildCardOmitPattern = *_STATUS
   //WildCardOmitPattern = *_DEBUG
+}
+//------------------------------------------
+// uMACView
+
+ProcessConfig = uMACView
+{
+  AppTick   = 4
+  CommsTick = 4
 }
