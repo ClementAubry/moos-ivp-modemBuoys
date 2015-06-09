@@ -552,6 +552,7 @@ bool Modem::Iterate()
     reportEvent("iModem: InRanging), not receiving_2\n");
   }
   reportEvent("iModem: InRanging), not receiving_3\n"); 
+  reportEvent("iModem: messageReceived"+messageReceived+"\n"); 
 
 
   // std::cout<< "config : [" <<m_bModemConfigurationRequired<<"|"<<
@@ -566,6 +567,14 @@ bool Modem::Iterate()
   //                            m_bMtReBootHasBeenSent<<"|"<<
   //                            m_bModemConfiguratonComplete<<"]"<<std::endl;
 
+    
+    string confProcLaunched = (m_bModemConfigurationRequired)?"yes":"no";
+    string modemPowered = (m_bIsModemPowered)?"yes":"no";
+    string magnetPowered = (m_bIsMagnetPowered)?"yes":"no";
+    string modemRoleRequired = (m_iModemRoleRequired)?"slave":"master";
+  reportEvent("iModem: InRanging), not receiving_3.5\n"); 
+    std::cout<< m_portName <<"|"<< m_Port.GetBaudRate() <<"|"<< m_sModemPowerOnLabjack <<"|"<< m_sMagnetPowerOnLabjack <<"|"<< confProcLaunched<<std::endl;
+    std::cout << modemPowered <<"|"<< magnetPowered <<"|"<< messageReceived <<"|"<< rangingValue <<"|"<< modemRoleRequired<<std::endl;
   AppCastingMOOSApp::PostReport();
   reportEvent("iModem: InRanging), not receiving_4\n"); 
   return true;
