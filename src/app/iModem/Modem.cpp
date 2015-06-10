@@ -292,7 +292,6 @@ bool Modem::OnConnectToServer()
 
 bool Modem::Iterate()
 {
-  reportEvent("iModem: InRanging), not receiving_5\n"); 
   AppCastingMOOSApp::Iterate();
   char buffer[100] = {0};
   double temps_secs;
