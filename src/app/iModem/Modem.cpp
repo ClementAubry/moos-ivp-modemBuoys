@@ -54,7 +54,6 @@ Modem::Modem()
 
   m_iModemRoleRequired = 0; //0 = master, 1 = slave
   m_uiTimeoutUS = 0;
-  m_uiRngTimeoutUS = 0;
   m_uiRngTimeoutUS_param = 0;
   m_iTimeBeforeTalking = 30;
   m_iInConfigTime = 0;
@@ -103,15 +102,12 @@ Modem::Modem()
     reportRunWarning("iModem: Modem thread listen initialization error...\n");
   if (!m_serial_thread_tempo.Initialise(listen_Modem_tempo_thread_func, (void*)this))
     reportRunWarning("iModem: Modem thread tempo initialization error...\n");
-  if (!m_thread_timeout_rng.Initialise(listen_thread_timeout_rng_func, (void*)this))
-    reportRunWarning("iModem: Rng timeout thread initialization error...\n");
 }
 Modem::~Modem()
 {
   reportEvent("iModem: stopping threads.\n");
   m_serial_thread_conf.Stop();
   m_serial_thread_tempo.Stop();
-  m_thread_timeout_rng.Stop();
   //Stop Magnet and modem alimentation
   char buffer[16] = {0}; //To publish "FIO=x" string
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack,0);
@@ -298,12 +294,6 @@ bool Modem::Iterate()
   string message;
   if(m_bModemConfigurationRequired)
   {
-    if (m_thread_timeout_rng.IsThreadRunning())
-    {
-      m_thread_timeout_rng.Stop();
-      m_bInRanging = false;
-      reportEvent("iModem: Ranging Timeout by thread because starting config\n");
-    }
     //Configure serial port in config mode (baudrate = 57600)
     if (m_Port.GetBaudRate() == 9600)
     {
@@ -462,11 +452,6 @@ bool Modem::Iterate()
     }
     if(m_bInRanging)
     {
-      // if (!m_thread_timeout_rng.IsThreadRunning())
-      // {
-      //   m_uiRngTimeoutUS = m_uiRngTimeoutUS_param;
-      //   m_thread_timeout_rng.Start();
-      // }
       if(receiveMessage(message, 1))
       {
         // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
@@ -483,11 +468,6 @@ bool Modem::Iterate()
           // MOOSTrace("iModem: Ranging Timeout******************************************************\n");
           m_sRngStr="";
           m_bInRanging = false;
-          // if (m_thread_timeout_rng.IsThreadRunning())
-          // {
-          //   m_thread_timeout_rng.Stop();
-          //   m_uiRngTimeoutUS = 0;
-          // }
         }
         else if (m_sRngStr.compare(0,6,"Range=") == 0 && m_sRngStr.size() >= 10)
         {
@@ -510,15 +490,10 @@ bool Modem::Iterate()
             Notify("MODEM_RANGING_RECEIVED", m_sRngStr);
             sprintf(buffer,"%s=%f",m_sRobotName.c_str(),rangingValue);
             Notify("MODEM_RANGING_VALUE", buffer);
-            // reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
+            reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
             // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
             m_sRngStr="";
             m_bInRanging = false;
-            if (m_thread_timeout_rng.IsThreadRunning())
-            {
-              m_thread_timeout_rng.Stop();
-              m_uiRngTimeoutUS = 0;
-            }
           }
         }
       }   
@@ -527,7 +502,7 @@ bool Modem::Iterate()
     {
       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
       Notify("MODEM_MSG_RECEPTION_TIME", buffer);
-      // reportEvent("iModem: Receiving ["+message+"]\n");
+      reportEvent("iModem: Receiving ["+message+"]\n");
         // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
@@ -665,24 +640,6 @@ bool Modem::OnStartUp()
 
   registerVariables();
   return true;
-}
-
-//---------------------------------------------------------
-// Procedure: ModemTempoFunction
-void Modem::RngTimeoutFunction()
-{
-  if (!m_serial_thread_tempo.IsQuitRequested() && m_uiRngTimeoutUS != 0)
-  {
-    MOOSPause(m_uiRngTimeoutUS);
-    m_uiRngTimeoutUS = 0;
-    char buffer[100] = {0};
-    sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
-    Notify("MODEM_RANGING_TIMEOUT", buffer);
-    reportEvent("iModem: Ranging Timeout by thread\n");
-    // MOOSTrace("iModem: Ranging Timeout******************************************************\n");
-    m_sRngStr="";
-    m_bInRanging = false;
-  }
 }
 //---------------------------------------------------------
 // Procedure: ModemTempoFunction
