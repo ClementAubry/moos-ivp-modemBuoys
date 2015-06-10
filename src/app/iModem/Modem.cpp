@@ -70,13 +70,12 @@ Modem::Modem()
   m_bIsModemPowered = false;
   m_bIsMagnetPowered = false;
 
-  string strMsg = m_sModemPowerOnLabjack;
   //parse string message to knwow which FIO to set
-  std::size_t fioStart = strMsg.find("FIO");
+  std::size_t fioStart = m_sModemPowerOnLabjack.find("FIO");
   if (fioStart!=std::string::npos)
   {
     char buffer[16] = {0};
-    std::size_t length = strMsg.copy(buffer,1,fioStart+3);
+    std::size_t length = m_sModemPowerOnLabjack.copy(buffer,1,fioStart+3);
     buffer[length]='\0';
     m_iModemPowerOnLabjack = atoi(buffer);
   }
@@ -85,13 +84,12 @@ Modem::Modem()
     m_iModemPowerOnLabjack = -1;
     MOOSFail("pModemManager: Error initializating FIO number for modem power management\n");
   }
-  strMsg = m_sMagnetPowerOnLabjack;
   //parse string message to knwow which FIO to set
-  fioStart = strMsg.find("FIO");
+  fioStart = m_sMagnetPowerOnLabjack.find("FIO");
   if (fioStart!=std::string::npos)
   {
     char buffer[16] = {0};
-    std::size_t length = strMsg.copy(buffer,1,fioStart+3);
+    std::size_t length = m_sMagnetPowerOnLabjack.copy(buffer,1,fioStart+3);
     buffer[length]='\0';
     m_iMagnetPowerOnLabjack = atoi(buffer);
   }
@@ -255,7 +253,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
       else
       {
         //Start timeout timer for rng
-        string ranging("rng\n");
+        string ranging("rng\n\0");
         if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
         {
           m_Port.Write(ranging.c_str(), ranging.size());
@@ -270,14 +268,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
-        {
-          reportEvent("iModem: rng sent, in else statement.\n");
-          string  trr = (m_bModemConfigurationRequired)?"yes":"no";
-          reportEvent("iModem: in config: ["+trr+"].\n");
-          string bdrt = (m_Port.GetBaudRate() ==9600)?"9600":"57600";
-          reportEvent("iModem: baud rate: ["+bdrt+"].\n");
           reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
-        }
       }
     }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
@@ -308,7 +299,6 @@ bool Modem::Iterate()
   string message;
   if(m_bModemConfigurationRequired)
   {
-    reportEvent("iModem: conf required.\n");
     if (m_thread_timeout_rng.IsThreadRunning())
     {
       m_thread_timeout_rng.Stop();
@@ -335,7 +325,6 @@ bool Modem::Iterate()
       MOOSPause(1000);
       m_timewarp = GetMOOSTimeWarp();
     }
-
     //Configuration Process
     switch (m_iInConfigTime) {
       case 0:
@@ -474,16 +463,13 @@ bool Modem::Iterate()
     }
     if(m_bInRanging)
     {
-      reportEvent("iModem: if(m_bInRanging).\n");
-      if (!m_thread_timeout_rng.IsThreadRunning())
+      // if (!m_thread_timeout_rng.IsThreadRunning())
+      // {
+      //   m_uiRngTimeoutUS = m_uiRngTimeoutUS_param;
+      //   m_thread_timeout_rng.Start();
+      // }
+      if(receiveMessage(message, 1))
       {
-        m_uiRngTimeoutUS = m_uiRngTimeoutUS_param;
-        m_thread_timeout_rng.Start();
-      }
-      reportEvent("iModem: if(m_bInRanging) after turning on thread.\n");
-      if(receiveRanging(message, 1))
-      {
-        reportEvent("iModem: receiveRanging(message, 1)= true.\n");
         // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
         m_sRngStr += message;
         stripUnicode(m_sRngStr);
@@ -498,11 +484,11 @@ bool Modem::Iterate()
           // MOOSTrace("iModem: Ranging Timeout******************************************************\n");
           m_sRngStr="";
           m_bInRanging = false;
-          if (m_thread_timeout_rng.IsThreadRunning())
-          {
-            m_thread_timeout_rng.Stop();
-            m_uiRngTimeoutUS = 0;
-          }
+          // if (m_thread_timeout_rng.IsThreadRunning())
+          // {
+          //   m_thread_timeout_rng.Stop();
+          //   m_uiRngTimeoutUS = 0;
+          // }
         }
         else if (m_sRngStr.compare(0,6,"Range=") == 0 && m_sRngStr.size() >= 10)
         {
@@ -536,12 +522,10 @@ bool Modem::Iterate()
             }
           }
         }
-      }
-      reportEvent("iModem: InRanging), not receiving_1\n");      
+      }   
     }
     else if (receiveMessage(messageReceived, 1))
     {
-      reportEvent("iModem: elseif(m_bInRanging) and message received.\n");
       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
       Notify("MODEM_MSG_RECEPTION_TIME", buffer);
       // reportEvent("iModem: Receiving ["+message+"]\n");
@@ -549,11 +533,7 @@ bool Modem::Iterate()
       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
     }
-    reportEvent("iModem: InRanging), not receiving_2\n");
   }
-  reportEvent("iModem: InRanging), not receiving_3\n"); 
-  reportEvent("iModem: messageReceived"+messageReceived+"\n"); 
-
 
   // std::cout<< "config : [" <<m_bModemConfigurationRequired<<"|"<<
   //                            m_bSentCfg <<"|"<<
@@ -567,16 +547,7 @@ bool Modem::Iterate()
   //                            m_bMtReBootHasBeenSent<<"|"<<
   //                            m_bModemConfiguratonComplete<<"]"<<std::endl;
 
-    
-    string confProcLaunched = (m_bModemConfigurationRequired)?"yes":"no";
-    string modemPowered = (m_bIsModemPowered)?"yes":"no";
-    string magnetPowered = (m_bIsMagnetPowered)?"yes":"no";
-    string modemRoleRequired = (m_iModemRoleRequired)?"slave":"master";
-  reportEvent("iModem: InRanging), not receiving_3.5\n"); 
-    std::cout<< m_portName <<"|"<< m_Port.GetBaudRate() <<"|"<< m_sModemPowerOnLabjack <<"|"<< m_sMagnetPowerOnLabjack <<"|"<< confProcLaunched<<std::endl;
-    std::cout << modemPowered <<"|"<< magnetPowered <<"|"<< messageReceived <<"|"<< rangingValue <<"|"<< modemRoleRequired<<std::endl;
   AppCastingMOOSApp::PostReport();
-  reportEvent("iModem: InRanging), not receiving_4\n"); 
   return true;
 }
 
@@ -971,23 +942,6 @@ void Modem::ListenModemMessages()
   }
 }
 //------------------------------------------------------------
-// Procedure: receiveRanging
-bool Modem::receiveRanging(string &message, double reception_timeout)
-{
-  reportEvent("iModem: in receiveRanging.\n");
-  //Ranging response could contain maximum 13 characters : Range=500.0m
-  char message_char[13]={0};
-  message = "";
-  if(m_Port.ReadNWithTimeOut(message_char, MESSAGE_MAX_LENGTH,reception_timeout))
-  {
-    message = message_char;
-  reportEvent("iModem: going out from receiveRanging with true value.\n");
-    return true;
-  }
-  reportEvent("iModem: going out from receiveRanging with false value.\n");
-  return false;
-}
-//------------------------------------------------------------
 // Procedure: receiveMessage
 bool Modem::receiveMessage(string &message, double reception_timeout)
 {
@@ -1041,7 +995,7 @@ bool Modem::buildReport()
     actab.addHeaderLines();
     string confProcLaunched = (m_bModemConfigurationRequired)?"yes":"no";
     actab << m_portName << m_Port.GetBaudRate() << m_sModemPowerOnLabjack << m_sMagnetPowerOnLabjack << confProcLaunched;
-m_msgs << actab.getFormattedString();
+    m_msgs << actab.getFormattedString();
     m_msgs << "\n==============================================================\n";
 
 ACTable actab2(5);
