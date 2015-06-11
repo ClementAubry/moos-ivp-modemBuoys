@@ -853,7 +853,7 @@ void Modem::ListenModemMessages()
                   SendModemConfigurationMessage(msg_ProgBlock);
                   MOOSTrace("iModem: Sending first mtProgBlock : ");
                   msg_ProgBlock.print_hex(300);
-                  m_uiTimeoutUS = 1000;
+                  m_uiTimeoutUS = 2000;
                   m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
               else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
@@ -865,7 +865,7 @@ void Modem::ListenModemMessages()
                   SendModemConfigurationMessage(msg_ProgBlock);
                   MOOSTrace("iModem: Sending second mtProgBlock : ");
                   msg_ProgBlock.print_hex(300);
-                  m_uiTimeoutUS = 1000;
+                  m_uiTimeoutUS = 2000;
                   m_serial_thread_tempo.Start();//A timeout of 2 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
               else if(m_bGetFirstPgrAck && m_bGetSecondPgrAck && m_bGetThirdPgrAck && !m_bModemConfiguratonComplete && !m_bMtReBootHasBeenSent)
