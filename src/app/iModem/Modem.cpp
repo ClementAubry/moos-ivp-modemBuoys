@@ -502,7 +502,7 @@ bool Modem::Iterate()
     {
       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
       Notify("MODEM_MSG_RECEPTION_TIME", buffer);
-      reportEvent("iModem: Receiving ["+message+"]\n");
+      reportEvent("iModem: Receiving ["+messageReceived+"]\n");
         // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
