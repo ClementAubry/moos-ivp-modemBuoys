@@ -13,7 +13,7 @@ ProcessConfig = ANTLER
   Run = uTimerScript @ NewConsole = false
 
   Run = iLabjack @ NewConsole = false
-  Run = iModem @ NewConsole = false
+  //Run = iModem @ NewConsole = false
 
   //Run = uMACView @ NewConsole = false
 
