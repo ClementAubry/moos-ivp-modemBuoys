@@ -738,7 +738,13 @@ void Modem::ListenModemMessages()
           else if (snmsg.messageType() == SeaNetMsg::mtVersionData)
           {
               m_bGetVersionData = true;
-                  MOOSTrace("iModem: Modem reply mtVersionData after receiving mtSendVersion\n");
+              MOOSTrace("iModem: Modem reply mtVersionData after receiving mtSendVersion\n");
+              if (m_serial_thread_tempo.IsThreadRunning())
+              {
+                MOOSTrace("iModem: thread stopped when receiving mtVersionData\n");
+                m_serial_thread_tempo.Stop();
+                m_uiTimeoutUS = 0;
+              }
           }
           else if (snmsg.messageType() == SeaNetMsg::mtBBUserData)
           {
@@ -755,6 +761,12 @@ void Modem::ListenModemMessages()
               m_bGetFpgaVersionData = true;
               MOOSTrace("iModem: Modem send mtFpgaVersionData\n");
               MOOSTrace("iModem: Modem will now send mtAlive with HeadInf = 0xC0\n");
+              if (m_serial_thread_tempo.IsThreadRunning())
+              {
+                MOOSTrace("iModem: thread stopped when receiving mtBBUserData and mtFpgaVersionData\n");
+                m_serial_thread_tempo.Stop();
+                m_uiTimeoutUS = 0;
+              }
           }
           else if (snmsg.messageType() == SeaNetMsg::mtPgrAck)
           {
@@ -765,6 +777,7 @@ void Modem::ListenModemMessages()
                   MOOSTrace("iModem: Modem send FIRST mtPgrAck\n");
                   if (m_serial_thread_tempo.IsThreadRunning())
                   {
+                    MOOSTrace("iModem: thread stopped when receiving FIRST mtPgrAck\n");
                     m_serial_thread_tempo.Stop();
                     m_uiTimeoutUS = 0;
                   }
@@ -775,6 +788,7 @@ void Modem::ListenModemMessages()
                   MOOSTrace("iModem: Modem send SECOND mtPgrAck\n");
                   if (m_serial_thread_tempo.IsThreadRunning())
                   {
+                    MOOSTrace("iModem: thread stopped when receiving SECOND mtPgrAck\n");
                     m_serial_thread_tempo.Stop();
                     m_uiTimeoutUS = 0;
                   }
@@ -785,6 +799,7 @@ void Modem::ListenModemMessages()
                   MOOSTrace("iModem: Modem send THIRD mtPgrAck\n");
                   if (m_serial_thread_tempo.IsThreadRunning())
                   {
+                    MOOSTrace("iModem: thread stopped when receiving THIRD mtPgrAck\n");
                     m_serial_thread_tempo.Stop();
                     m_uiTimeoutUS = 0;
                   }
@@ -842,7 +857,7 @@ void Modem::ListenModemMessages()
                   SendModemConfigurationMessage(msg_EraseSector);
                   MOOSTrace("iModem: Sending mtEraseSector : ");
                   msg_EraseSector.print_hex(200);
-                  m_uiTimeoutUS = 1000;
+                  m_uiTimeoutUS = 3000;
                   m_serial_thread_tempo.Start();//A timeout of 3 seconds can be set. If the mtPgrAck is not received within this timeout period then re-send the mtEraseSector
               }
               else if(m_bGetFirstPgrAck && !m_bGetSecondPgrAck && !m_bGetThirdPgrAck && m_uiTimeoutUS == 0)
