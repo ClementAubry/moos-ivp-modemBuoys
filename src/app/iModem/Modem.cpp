@@ -145,7 +145,30 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     {
       string robotRole;
       //search for an AUVx=master to store it in m_sMasterModemName string in order to know who is the master
-      // TODO!!!
+      string robotRoles = msg.GetString();
+      string str = MOOSChomp(robotRoles, ",");
+      bool mastersNameFounded=false;
+MOOSTrace("iModem: receiving MODEM_CONFIGURATION_REQUIRED=[%s].\n",msg.GetString().c_str());
+MOOSTrace("iModem: str : [%s].\n",str.c_str());
+      while(!mastersNameFounded)
+      {
+MOOSTrace("iModem: str inwhile : [%s].\n",str.c_str());
+        if (MOOSStrFind( str , "master") != string::npos)
+        {
+          m_sMasterModemName = MOOSChomp(str, "=");
+          MOOSTrimWhiteSpace(m_sMasterModemName);
+MOOSTrace("iModem: extracted master : [%s].\n",m_sMasterModemName.c_str());
+mastersNameFounded = true;
+          break;
+        }
+        else if (MOOSStrFind( str , "=") == string::npos)
+        {
+          mastersNameFounded = false;
+          break;
+        }
+        str = MOOSChomp(robotRoles, ",");
+      }
+MOOSTrace("iModem: extracted master outWhile : [%s].\n",m_sMasterModemName.c_str());
       //if we found a string m_sRobotName=role, configure us as role
       if(!MOOSValFromString(robotRole, msg.GetString(), m_sRobotName))
         reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_CONFIGURATION_REQUIRED");
