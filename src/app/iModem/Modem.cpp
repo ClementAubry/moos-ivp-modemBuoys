@@ -61,6 +61,7 @@ Modem::Modem()
   m_sRngStr="";
   messageReceived = "";
   rangingValue = 0;
+  m_sMasterModemName="";
 
   //Configuration for Modem and magnet power supply
   m_sModemPowerOnLabjack = "FIO0";
@@ -143,6 +144,8 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     if ( key == "MODEM_CONFIGURATION_REQUIRED" && msg.IsString() )
     {
       string robotRole;
+      //search for an AUVx=master to store it in m_sMasterModemName string in order to know who is the master
+      // TODO!!!
       //if we found a string m_sRobotName=role, configure us as role
       if(!MOOSValFromString(robotRole, msg.GetString(), m_sRobotName))
         reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_CONFIGURATION_REQUIRED");
@@ -267,6 +270,23 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
       }
     }
+    // else if(key == "MODEM_RNG_TR")
+    // {
+    //     if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
+    //     {
+    //       char buffer[100] = {0};
+    //       sprintf(buffer,"d%s%s=%f",m_sRobotName.c_str(),m_sMasterModemName.c_str(),MOOSTime());
+    //       m_Port.Write(buffer, buffer.size());
+    //       reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
+    //       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+    //       Notify("MODEM_RNG_TR_EMISSION_TIME",buffer);
+    //       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
+    //       Notify("MODEM_RNG_TR_SENT", buffer);
+    //       retractRunWarning("iModem: Cannot send range transmission, modem could be in a configuration step or serial port baddly configured\n");
+    //     }
+    //     else
+    //       reportRunWarning("iModem: Cannot send range transmission, modem could be in a configuration step or serial port baddly configured\n");
+    // }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
   }

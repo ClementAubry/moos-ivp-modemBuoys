@@ -49,6 +49,7 @@ class Modem : public AppCastingMOOSApp
 
   private: // Configuration variables
     std::string   m_sRobotName;
+    std::string   m_sMasterModemName;
     std::string   m_portName;
     int           m_baudrate_conf;
     int           m_baudrate_comm;
