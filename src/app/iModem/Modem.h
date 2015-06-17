@@ -46,6 +46,7 @@ class Modem : public AppCastingMOOSApp
   protected: // Standard AppCastingMOOSApp functions to overload
     bool buildReport();
     void registerVariables();
+    void extractMasterName(std::string &);
 
   private: // Configuration variables
     std::string   m_sRobotName;

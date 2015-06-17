@@ -145,30 +145,10 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     {
       string robotRole;
       //search for an AUVx=master to store it in m_sMasterModemName string in order to know who is the master
-      string robotRoles = msg.GetString();
-      string str = MOOSChomp(robotRoles, ",");
-      bool mastersNameFounded=false;
-MOOSTrace("iModem: receiving MODEM_CONFIGURATION_REQUIRED=[%s].\n",msg.GetString().c_str());
-MOOSTrace("iModem: str : [%s].\n",str.c_str());
-      while(!mastersNameFounded)
-      {
-MOOSTrace("iModem: str inwhile : [%s].\n",str.c_str());
-        if (MOOSStrFind( str , "master") != string::npos)
-        {
-          m_sMasterModemName = MOOSChomp(str, "=");
-          MOOSTrimWhiteSpace(m_sMasterModemName);
-MOOSTrace("iModem: extracted master : [%s].\n",m_sMasterModemName.c_str());
-mastersNameFounded = true;
-          break;
-        }
-        else if (MOOSStrFind( str , "=") == string::npos)
-        {
-          mastersNameFounded = false;
-          break;
-        }
-        str = MOOSChomp(robotRoles, ",");
-      }
-MOOSTrace("iModem: extracted master outWhile : [%s].\n",m_sMasterModemName.c_str());
+      m_sMasterModemName = msg.GetString();
+      //MOOSTrace("iModem: received string : [%s].\n",m_sMasterModemName.c_str());
+      extractMasterName(m_sMasterModemName);
+      //MOOSTrace("iModem: extracted master: [%s].\n",m_sMasterModemName.c_str());
       //if we found a string m_sRobotName=role, configure us as role
       if(!MOOSValFromString(robotRole, msg.GetString(), m_sRobotName))
         reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_CONFIGURATION_REQUIRED");
@@ -188,6 +168,31 @@ MOOSTrace("iModem: extracted master outWhile : [%s].\n",m_sMasterModemName.c_str
         }
         else
           reportRunWarning("iModem: ERROR: New Mail asking new modem configuration as ["+msg.GetString()+"], ASKED CONFIGURATION UNRECOGNIZED (case sensitive)\n");
+      }
+    }
+    else if ( key == "MODEM_SEND_RANGE" && msg.IsString() )
+    {
+      string messageToSent;
+      //if we found a string m_sRobotName=role, configure us as role
+      if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
+        reportRunWarning("iModem: Unable to find my role in MODEM_SEND_MESSAGE variable");
+      else
+      {
+        retractRunWarning("iModem: Unable to find my role in MODEM_SEND_MESSAGE variable");
+        if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
+        {
+          char buffer[100] = {0};
+          sprintf(buffer,"d%s%s=%3.3f",m_sRobotName.c_str(),m_sMasterModemName.c_str(),rangingValue);
+          m_Port.Write(messageToSent.c_str(), messageToSent.size());
+          reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
+          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+          Notify("MODEM_MSG_EMISSION_TIME",buffer);
+          sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
+          Notify("MODEM_MESSAGE_SENT", buffer);
+          retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+        }
+        else
+          reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
       }
     }
     else if ( key == "MODEM_SEND_MESSAGE" && msg.IsString() )
@@ -293,23 +298,6 @@ MOOSTrace("iModem: extracted master outWhile : [%s].\n",m_sMasterModemName.c_str
           reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
       }
     }
-    // else if(key == "MODEM_RNG_TR")
-    // {
-    //     if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
-    //     {
-    //       char buffer[100] = {0};
-    //       sprintf(buffer,"d%s%s=%f",m_sRobotName.c_str(),m_sMasterModemName.c_str(),MOOSTime());
-    //       m_Port.Write(buffer, buffer.size());
-    //       reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
-    //       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-    //       Notify("MODEM_RNG_TR_EMISSION_TIME",buffer);
-    //       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
-    //       Notify("MODEM_RNG_TR_SENT", buffer);
-    //       retractRunWarning("iModem: Cannot send range transmission, modem could be in a configuration step or serial port baddly configured\n");
-    //     }
-    //     else
-    //       reportRunWarning("iModem: Cannot send range transmission, modem could be in a configuration step or serial port baddly configured\n");
-    // }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
   }
@@ -1022,4 +1010,29 @@ ACTable actab2(5);
     m_msgs << actab2.getFormattedString();
 
   return true;
+}
+void Modem::extractMasterName(string &robotRoles)
+{
+      string str = MOOSChomp(robotRoles, ",");
+      bool mastersNameFounded=false;
+      // MOOSTrace("iModem: receiving MODEM_CONFIGURATION_REQUIRED=[%s].\n",msg.GetString().c_str());
+      // MOOSTrace("iModem: str : [%s].\n",str.c_str());
+      while(!mastersNameFounded)
+      {
+        // MOOSTrace("iModem: str inwhile : [%s].\n",str.c_str());
+        if (MOOSStrFind( str , "master") != string::npos)
+        {
+          robotRoles = MOOSChomp(str, "=");
+          MOOSTrimWhiteSpace(robotRoles);
+          // MOOSTrace("iModem: extracted master : [%s].\n",m_sMasterModemName.c_str());
+          mastersNameFounded = true;
+          break;
+        }
+        else if (MOOSStrFind( str , "=") == string::npos)
+        {
+          mastersNameFounded = false;
+          break;
+        }
+        str = MOOSChomp(robotRoles, ",");
+      }
 }
