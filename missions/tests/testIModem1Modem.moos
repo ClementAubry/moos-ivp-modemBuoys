@@ -10,7 +10,7 @@ ProcessConfig = ANTLER
 
   Run = iLabjack @ NewConsole = true
 
-  Run = iModem @ NewConsole = true~ iModemAUV1
+  //Run = iModem @ NewConsole = true~ iModemAUV1
 }
 
 ProcessConfig = iModemAUV1
