@@ -7,10 +7,11 @@ Community = LAUNCHER // le nom de la communauté MOOS
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
-  //Run = uMS @ NewConsole = false
+  Run = uMS @ NewConsole = false
   Run = pLogger @ NewConsole = false
   Run = pShare @ NewConsole = false
-  //Run = uMACView @ NewConsole = false
+  Run = uMACView @ NewConsole = false
+  Run = uTimerScript @ NewConsole = false
 }
 
 ProcessConfig=pShare
@@ -20,7 +21,7 @@ ProcessConfig=pShare
   Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
 
   //we can do this one at a time using the route directive
-  Input = route=multicast_6&multicast_7&multicast_8
+  Input = route=multicast_6
 }
 ProcessConfig = pLogger
 {
@@ -49,4 +50,18 @@ ProcessConfig = uMACView
 {
   AppTick   = 4
   CommsTick = 4
+}
+
+ProcessConfig = uTimerScript                                    
+{                                                               
+  AppTick   = 4                                                 
+  CommsTick = 4 
+
+  // Event(s) are the key components of the script              
+  event          = var=MODEM_MISSION_START, val="true", time=0
+
+  // A point when the script is reset                           
+  reset_time     = 0    // or {all-posted} or range (0,inf)
+  // Maximum number of resets allowed                           
+  reset_max      = 0  // or in range [0,inf) 
 }
