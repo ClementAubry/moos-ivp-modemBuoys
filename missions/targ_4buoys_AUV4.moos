@@ -1,0 +1,153 @@
+Community = AUV4
+ServerHost = localhost
+ServerPort = 9000
+MOOSTimeWarp = 1
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  //Run = uMS @ NewConsole = false
+  Run = pLogger @ NewConsole = false
+  Run = pShare @ NewConsole = false
+  Run = uTimerScript @ NewConsole = false
+
+  Run = iLabjack @ NewConsole = false
+  Run = iModem @ NewConsole = false
+
+  Run = uMACView @ NewConsole = false
+  Run = pScheduler @ NewConsole = false
+
+}
+
+ProcessConfig=pShare
+{
+  //we can do this one at a time using the route directive
+  Input = route=multicast_8
+
+  //a verbose way of sharing X, calling it Y and sending
+  //on mulitcast_8
+  Output = src_name =MODEM_MISSION_STARTED,dest_name=MODEM_MISSION_STARTED,route=multicast_6
+}
+
+ProcessConfig = pScheduler
+{
+  // generate a response to MODEM_MISSION_START.
+  // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
+  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTED @ AUV4
+}
+
+ProcessConfig = iModem
+{
+  AppTick   = 4
+  CommsTick = 4
+  max_appcast_events = 8
+
+  ROBOT_NAME = AUV4
+
+  SERIAL_PORT_NAME = /dev/ttyUSB0
+  BAUD_RATE_CONF = 57600
+  BAUD_RATE_COMM = 9600
+
+  MODEM_LJ_POWER = FIO0
+  MAGNET_LJ_POWER = FIO1
+}
+
+ProcessConfig = iLabjack
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  max_appcast_events = 20
+}
+
+ProcessConfig = uTimerScript                                    
+{                                                               
+  AppTick   = 4                                                 
+  CommsTick = 4 
+
+  // If true script is paused upon launch                       
+  //paused         = true                                                              
+  // Logic condition that must be met for script to be unpaused 
+  condition      = MODEM_MISSION_START = true
+  // Seconds added to each event time, on each script pass      
+  delay_reset    = 0                                            
+  // Seconds added to each event time, on first pass only       
+  delay_start    = 0
+  // Event(s) are the key components of the script              
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave,AUV3=slave,AUV4=slave", time=0//15s config
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=15 //5s for ranging
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=20 // 10s for comm
+  event          = var=MODEM_SEND_MESSAGE, val="AUV1=ranging acknowledge", time=30 // 10s for comm 
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=40 //5s for ranging
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=45 // 10s for comm
+  event          = var=MODEM_SEND_MESSAGE, val="AUV1=ranging acknowledge", time=55 // 10s for comm 
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=65 //5s for ranging
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=70 // 10s for comm
+  event          = var=MODEM_SEND_MESSAGE, val="AUV1=ranging acknowledge", time=80 // 10s for comm 
+
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=master,AUV3=slave,AUV4=slave", time=90
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=105
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=110
+  event          = var=MODEM_SEND_MESSAGE, val="AUV2=ranging acknowledge", time=120
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=130
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=135
+  event          = var=MODEM_SEND_MESSAGE, val="AUV2=ranging acknowledge", time=145
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=155
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=160
+  event          = var=MODEM_SEND_MESSAGE, val="AUV2=ranging acknowledge", time=170
+
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=slave,AUV3=master,AUV4=slave", time=180
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=195
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=200
+  event          = var=MODEM_SEND_MESSAGE, val="AUV3=ranging acknowledge", time=210
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=220
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=225
+  event          = var=MODEM_SEND_MESSAGE, val="AUV3=ranging acknowledge", time=235
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=245
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=250
+  event          = var=MODEM_SEND_MESSAGE, val="AUV3=ranging acknowledge", time=260
+
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=slave,AUV3=slave,AUV4=master", time=270
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=285
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=290
+  event          = var=MODEM_SEND_MESSAGE, val="AUV4=ranging acknowledge", time=300
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=310
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=315
+  event          = var=MODEM_SEND_MESSAGE, val="AUV4=ranging acknowledge", time=325
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=335
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=340
+  event          = var=MODEM_SEND_MESSAGE, val="AUV4=ranging acknowledge", time=350
+
+  // A point when the script is reset                           
+  reset_time     = 360     // or {all-posted} or range (0,inf)
+  // Maximum number of resets allowed                           
+  reset_max      = 50  // or in range [0,inf) 
+}
+ProcessConfig = pLogger
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  File = MODEM_CONF_TEST
+
+  //SyncLog = false
+  //AsyncLog = true
+
+  PATH = ./data
+
+  //LogAuxSrc = true
+  WildCardLogging = true
+  //WildCardPattern = MODEM_*
+  //WildCardOmitPattern = *_ITER_GAP
+  //WildCardOmitPattern = *_ITER_LEN
+  //WildCardOmitPattern = *_STATUS
+  //WildCardOmitPattern = *_DEBUG
+}
+//------------------------------------------
+// uMACView
+
+ProcessConfig = uMACView
+{
+  AppTick   = 4
+  CommsTick = 4
+}
