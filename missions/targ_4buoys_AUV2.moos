@@ -26,14 +26,14 @@ ProcessConfig=pShare
 
   //a verbose way of sharing X, calling it Y and sending
   //on mulitcast_8
-  Output = src_name =MODEM_MISSION_STARTED,dest_name=MODEM_MISSION_STARTED,route=multicast_6
+  Output = src_name =MODEM_MISSION_STARTEDAUV2,dest_name=MODEM_MISSION_STARTEDAUV2,route=multicast_6
 }
 
 ProcessConfig = pScheduler
 {
   // generate a response to MODEM_MISSION_START.
   // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
-  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTED @ AUV2
+  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTEDAUV2 @ true
 }
 
 ProcessConfig = iModem
