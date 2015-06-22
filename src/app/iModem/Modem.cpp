@@ -569,6 +569,8 @@ bool Modem::Iterate()
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
       //now try to reconstruct the full string
       m_sMsgStr+=messageReceived;
+      stripUnicode(m_sMsgStr);
+      stripCRLF7F(m_sMsgStr);
         //From http://cboard.cprogramming.com/c-programming/115509-validation-string-format.html
         // Elegant solution to check if a string 's' is formated like "&x,&y,&z" with x, y and z integers
         // char a[2], b[20], c[2], d[2], e[20], f[2], g[2], h[20];
@@ -590,7 +592,7 @@ bool Modem::Iterate()
               int idCharM = MOOSStrFind( msgToParse , "m");
               if (idCharM != msgToParse.size()-1)
               {
-                reportEvent("iModem: le char 'm' n'est pas a la fin de la chaine.\n");
+                reportEvent("iModem: le char 'm' n'est pas a la fin de la chaine["+msgToParse+"].\n");
                 msgToParse = msgToParse.substr(0, idCharM+1);
               }
               distanceFounded = true;
