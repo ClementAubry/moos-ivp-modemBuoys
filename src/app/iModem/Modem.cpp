@@ -350,6 +350,10 @@ bool Modem::Iterate()
   string message;
   if(m_bModemConfigurationRequired)
   {
+    m_sRngStr="";
+    m_sMsgStr="";
+    messageReceived="";
+    m_sLastRangeStr="";
     //Configure serial port in config mode (baudrate = 57600)
     if (m_Port.GetBaudRate() == 9600)
     {
@@ -372,9 +376,6 @@ bool Modem::Iterate()
     }
     //Configuration Process
     switch (m_iInConfigTime) {
-      m_sMsgStr="";
-      m_sRngStr="";
-      m_sLastRangeStr="";
       case 0:
         MOOSTrace("ModemManager: Not in Config Mode, nothing to do\n");
       break;
@@ -513,6 +514,8 @@ bool Modem::Iterate()
     {
       m_sMsgStr="";
       m_sLastRangeStr="";
+      messageReceived="";
+
       if(receiveMessage(message, 1))
       {
         // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
