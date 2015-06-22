@@ -186,9 +186,9 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           m_Port.Write(messageToSent.c_str(), messageToSent.size());
           reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
           sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_MSG_EMISSION_TIME",buffer);
+          Notify("MODEM_RANGEMSG_EMISSION_TIME",buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
-          Notify("MODEM_MESSAGE_SENT", buffer);
+          Notify("MODEM_RANGEMSG_SENT", buffer);
           retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
