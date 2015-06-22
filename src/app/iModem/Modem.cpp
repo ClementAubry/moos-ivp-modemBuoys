@@ -173,26 +173,25 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
     else if ( key == "MODEM_SEND_RANGE" && msg.IsString() )
     {
       string messageToSent;
-      //if we found a string m_sRobotName=role, configure us as role
+      //try to fiund a string m_sRobotName=role
       if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
-        reportRunWarning("iModem: Unable to find my role in MODEM_SEND_MESSAGE variable");
+        reportRunWarning("iModem: Unable to find my role in MODEM_SEND_RANGE variable");
       else
       {
-        retractRunWarning("iModem: Unable to find my role in MODEM_SEND_MESSAGE variable");
+        retractRunWarning("iModem: Unable to find my role in MODEM_SEND_RANGE variable");
         if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
         {
           char buffer[100] = {0};
-          sprintf(buffer,"d%s%s=%3.3f",m_sRobotName.c_str(),m_sMasterModemName.c_str(),rangingValue);
-          m_Port.Write(messageToSent.c_str(), messageToSent.size());
-          reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
+          int bs = sprintf(buffer,"d%s%s=%3.3fm",m_sRobotName.c_str(),m_sMasterModemName.c_str(),rangingValue);
+          m_Port.Write(buffer, bs);
+          reportEvent("iModem: Range message ["+string(buffer)+"] sent.\n");
+          Notify("MODEM_RANGEMSG_SENT", buffer);
           sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
           Notify("MODEM_RANGEMSG_EMISSION_TIME",buffer);
-          sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
-          Notify("MODEM_RANGEMSG_SENT", buffer);
-          retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+          retractRunWarning("iModem: Cannot send range message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
-          reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
+          reportRunWarning("iModem: Cannot send range message, modem could be in a configuration step or serial port baddly configured\n");
       }
     }
     else if ( key == "MODEM_SEND_MESSAGE" && msg.IsString() )
