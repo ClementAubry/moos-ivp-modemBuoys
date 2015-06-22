@@ -59,6 +59,7 @@ Modem::Modem()
   m_iInConfigTime = 0;
   m_bInRanging = false;
   m_sRngStr="";
+  m_sMsgStr="";
   messageReceived = "";
   rangingValue = 0;
   m_sMasterModemName="";
@@ -143,6 +144,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
 
     if ( key == "MODEM_CONFIGURATION_REQUIRED" && msg.IsString() )
     {
+
       string robotRole;
       //search for an AUVx=master to store it in m_sMasterModemName string in order to know who is the master
       m_sMasterModemName = msg.GetString();
@@ -297,6 +299,30 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           reportRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
       }
     }
+    else if(key == "MODEM_ACK_RANGE")
+    {
+      string messageToSent;
+      //if we found a string m_sRobotName=role, configure us as role
+      if(!MOOSValFromString(messageToSent, msg.GetString(), m_sRobotName))
+        reportRunWarning(msg.GetKey() + ": Unable to find my role in MODEM_ACK_RANGE variable");
+      else
+      {
+        if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
+        {
+          m_Port.Write(m_sLastRangeStr.c_str(), m_sLastRangeStr.size());
+          reportEvent("iModem: Message ["+m_sLastRangeStr+"] sent.\n");
+          char buffer[100] = {0};
+          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+          Notify("MODEM_RNG_ACK_EMISSION_TIME", buffer);
+          sprintf(buffer,"%s=%i",m_sRobotName.c_str(),true);
+          Notify("MODEM_RNG_ACK_SENT",buffer);
+          reportEvent("iModem: rng ack sent.\n");
+          retractRunWarning("iModem: Cannot send MODEM_ACK_RANGE, modem could be in a configuration step or serial port baddly configured\n");
+        }
+        else
+          reportRunWarning("iModem: Cannot send MODEM_ACK_RANGE, modem could be in a configuration step or serial port baddly configured\n");
+      }
+    }
     else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
   }
@@ -346,6 +372,9 @@ bool Modem::Iterate()
     }
     //Configuration Process
     switch (m_iInConfigTime) {
+      m_sMsgStr="";
+      m_sRngStr="";
+      m_sLastRangeStr="";
       case 0:
         MOOSTrace("ModemManager: Not in Config Mode, nothing to do\n");
       break;
@@ -482,6 +511,8 @@ bool Modem::Iterate()
     }
     if(m_bInRanging)
     {
+      m_sMsgStr="";
+      m_sLastRangeStr="";
       if(receiveMessage(message, 1))
       {
         // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
@@ -522,7 +553,6 @@ bool Modem::Iterate()
             Notify("MODEM_RANGING_VALUE", buffer);
             reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
             // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
-            m_sRngStr="";
             m_bInRanging = false;
           }
         }
@@ -530,12 +560,58 @@ bool Modem::Iterate()
     }
     else if (receiveMessage(messageReceived, 1))
     {
+      m_sRngStr="";
       sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
       Notify("MODEM_MSG_RECEPTION_TIME", buffer);
       reportEvent("iModem: Receiving ["+messageReceived+"]\n");
         // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
       sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
       Notify("MODEM_MESSAGE_RECEIVED", buffer);
+      //now try to reconstruct the full string
+      m_sMsgStr+=messageReceived;
+        //From http://cboard.cprogramming.com/c-programming/115509-validation-string-format.html
+        // Elegant solution to check if a string 's' is formated like "&x,&y,&z" with x, y and z integers
+        // char a[2], b[20], c[2], d[2], e[20], f[2], g[2], h[20];
+        // char s[] = "&123456,&1007,&9";
+        // if (sscanf(s, "%[&]%[0-9]%[,]%[&]%[0-9]%[,]%[&]%[0-9]", a, b, c, d, e, f, g, h) == 8)
+        //     printf("okay\n");
+        string msgToParse = m_sMsgStr;
+        uint tailleMin = 14; //"dAUVxAUVy=z.zm"
+        // uint tailleMax = 18; //"dAUVxAUVy=zzz.zzzm"//pour l'instant ne sert pas
+        if (msgToParse.size() >= tailleMin)
+        {
+          bool distanceFounded = false;
+          char sd[2], sA1[2], sU1[2], sV1[2], sname1[20], sA2[2], sU2[2], sV2[2], sname2[20], seq[2], smeters[20], sdot[2], smm[20], sM[2];
+
+          while (!distanceFounded)
+          {
+            if (sscanf(msgToParse.c_str(), "%[d]%[A]%[U]%[V]%1[0-9]%[A]%[U]%[V]%1[0-9]%1[=]%[0-9]%[.]%[0-9]%[m]", sd, sA1, sU1, sV1, sname1, sA2, sU2, sV2, sname2, seq, smeters, sdot, smm, sM) == 14)
+            {
+              int idCharM = MOOSStrFind( msgToParse , "m");
+              if (idCharM != msgToParse.size()-1)
+              {
+                reportEvent("iModem: le char 'm' n'est pas a la fin de la chaine.\n");
+                msgToParse = msgToParse.substr(0, idCharM+1);
+              }
+              distanceFounded = true;
+              reportEvent("iModem: extracted range message: ["+msgToParse+"].\n");
+              m_sLastRangeStr = msgToParse;
+            }
+            else if (msgToParse.size() >= tailleMin)
+            {
+              msgToParse = msgToParse.substr(1, msgToParse.size());
+            }
+            // else
+            // {
+            //   reportEvent("iModem: rien trouvé.\n");
+            // }
+            
+          }
+        }
+        // else
+        // {
+        //   reportEvent("iModem: string ["+msgToParse+"] trop petite.\n");
+        // }
     }
   }
 
@@ -965,6 +1041,7 @@ void Modem::registerVariables()
   AppCastingMOOSApp::RegisterVariables();
   Register("MODEM_CONFIGURATION_REQUIRED", 0);
   Register("MODEM_SEND_RANGE", 0);
+  Register("MODEM_ACK_RANGE", 0);
   Register("MODEM_SEND_MESSAGE", 0);
   Register("MODEM_SEND_RNG", 0);
   Register("MODEM_TIME_BEFORE_TALKING", 0);

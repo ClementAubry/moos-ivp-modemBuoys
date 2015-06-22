@@ -98,7 +98,9 @@ class Modem : public AppCastingMOOSApp
     int m_iInConfigTime;
     bool m_bInRanging;
     std::string m_sRngStr;
+    std::string m_sMsgStr;
     std::string messageReceived;
+    std::string m_sLastRangeStr;
     double rangingValue;
 
     //Thread created for modem configuration
