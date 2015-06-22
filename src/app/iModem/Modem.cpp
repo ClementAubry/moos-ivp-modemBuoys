@@ -964,6 +964,7 @@ void Modem::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   Register("MODEM_CONFIGURATION_REQUIRED", 0);
+  Register("MODEM_SEND_RANGE", 0);
   Register("MODEM_SEND_MESSAGE", 0);
   Register("MODEM_SEND_RNG", 0);
   Register("MODEM_TIME_BEFORE_TALKING", 0);
