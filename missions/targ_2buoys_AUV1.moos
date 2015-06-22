@@ -1,7 +1,7 @@
-Community = $(NAME)
-ServerHost = $(SERVER_HOST)
-ServerPort = $(SERVER_PORT)
-MOOSTimeWarp = $(TIME_WARP)
+Community = AUV1
+ServerHost = localhost
+ServerPort = 9000
+MOOSTimeWarp = 1
 
 ProcessConfig = ANTLER
 {
@@ -26,14 +26,14 @@ ProcessConfig=pShare
 
   //a verbose way of sharing X, calling it Y and sending
   //on mulitcast_8
-  Output = src_name =MODEM_MISSION_STARTED$(NAME),dest_name=MODEM_MISSION_STARTED$(NAME),route=multicast_6
+  Output = src_name =MODEM_MISSION_STARTEDAUV1,dest_name=MODEM_MISSION_STARTEDAUV1,route=multicast_6
 }
 
 ProcessConfig = pScheduler
 {
   // generate a response to MODEM_MISSION_START.
   // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
-  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTED$(NAME) @ true
+  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTEDAUV1 @ true
 }
 
 ProcessConfig = iModem
@@ -42,7 +42,7 @@ ProcessConfig = iModem
   CommsTick = 4
   max_appcast_events = 8
 
-  ROBOT_NAME = $(NAME)
+  ROBOT_NAME = AUV1
 
   SERIAL_PORT_NAME = /dev/ttyUSB0
   BAUD_RATE_CONF = 57600
@@ -50,14 +50,6 @@ ProcessConfig = iModem
 
   MODEM_LJ_POWER = FIO0
   MAGNET_LJ_POWER = FIO1
-}
-
-ProcessConfig = iLabjack
-{
-  AppTick   = 4
-  CommsTick = 4
-
-  max_appcast_events = 20
 }
 
 ProcessConfig = uTimerScript                                    
@@ -74,35 +66,22 @@ ProcessConfig = uTimerScript
   // Seconds added to each event time, on first pass only       
   delay_start    = 0
   // Event(s) are the key components of the script              
-  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave,AUV3=slave", time=0//15s config
-  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=15 //5s for ranging
-  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=20 // 10s for comm
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=30 // 10s for comm 
-  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=40 //5s for ranging
-  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=45 // 10s for comm
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=55 // 10s for comm
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave", time=0
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=15
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=20
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=30
 
-  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=master,AUV3=slave", time=65
-  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=80
-  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=85
-  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=95
-  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=105
-  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=110
-  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=120
-
-  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=slave,AUV3=master", time=130
-  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=145
-  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=150
-  event          = var=MODEM_ACK_RANGE, val="AUV3=1", time=160
-  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=170
-  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=175
-  event          = var=MODEM_ACK_RANGE, val="AUV3=1", time=185
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=master", time=40
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=55
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=60
+  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=70
 
   // A point when the script is reset                           
-  reset_time     = 195     // or {all-posted} or range (0,inf)
+  reset_time     = 80     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
   reset_max      = 50  // or in range [0,inf) 
 }
+
 ProcessConfig = pLogger
 {
   AppTick   = 4
@@ -123,8 +102,14 @@ ProcessConfig = pLogger
   //WildCardOmitPattern = *_STATUS
   //WildCardOmitPattern = *_DEBUG
 }
-//------------------------------------------
-// uMACView
+
+ProcessConfig = iLabjack
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  max_appcast_events = 20
+}
 
 ProcessConfig = uMACView
 {

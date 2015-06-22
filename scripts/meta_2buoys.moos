@@ -69,12 +69,12 @@ ProcessConfig = uTimerScript
   event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave", time=0
   event          = var=MODEM_SEND_RNG, val="AUV2=1", time=15
   event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=20
-  event          = var=MODEM_SEND_MESSAGE, val="AUV1=ranging acknowledge", time=30
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=30
 
   event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=master", time=40
   event          = var=MODEM_SEND_RNG, val="AUV1=1", time=55
   event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=60
-  event          = var=MODEM_SEND_MESSAGE, val="AUV2=ranging acknowledge", time=70
+  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=70
 
   // A point when the script is reset                           
   reset_time     = 80     // or {all-posted} or range (0,inf)
