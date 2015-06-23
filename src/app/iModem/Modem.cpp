@@ -749,7 +749,7 @@ bool Modem::OnStartUp()
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
   Notify("SET_FIOX_STATE",buffer);
   //Power down modem, they will be powered up at any reception of modem_configuration_required
-  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
+  sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 0);
   Notify("SET_FIOX_STATE",buffer);
 
   registerVariables();
