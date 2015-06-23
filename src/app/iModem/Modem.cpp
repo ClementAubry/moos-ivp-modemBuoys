@@ -184,7 +184,11 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
         if (!m_bModemConfigurationRequired && m_Port.GetBaudRate() == 9600)
         {
           char buffer[100] = {0};
-          int bs = sprintf(buffer,"d%s%s=%3.3fm",m_sRobotName.c_str(),m_sMasterModemName.c_str(),rangingValue);
+          int bs=0;
+          if (rangingValue == 777.777)
+            bs = sprintf(buffer,"d%s%s=TMO",m_sRobotName.c_str(),m_sMasterModemName.c_str());
+          else
+            bs = sprintf(buffer,"d%s%s=%3.3fm",m_sRobotName.c_str(),m_sMasterModemName.c_str(),rangingValue);
           m_Port.Write(buffer, bs);
           reportEvent("iModem: Range message ["+string(buffer)+"] sent.\n");
           Notify("MODEM_RANGEMSG_SENT", buffer);
@@ -525,6 +529,7 @@ bool Modem::Iterate()
         stripCRLF7F(m_sRngStr);
         if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
+          rangingValue = 777.777;
           sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
           Notify("MODEM_RNG_RECEPTION_TIME", buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
@@ -597,7 +602,19 @@ bool Modem::Iterate()
               if (idCharM != msgToParse.size()-1)
               {
                 reportEvent("iModem: le char 'm' n'est pas a la fin de la chaine["+msgToParse+"].\n");
-                msgToParse = msgToParse.substr(0, idCharM+1);
+              }
+              distanceFounded = true;
+              reportEvent("iModem: extracted range message: ["+msgToParse+"].\n");
+              m_sLastRangeStr = msgToParse;
+              m_sMsgStr = "";
+              break;
+            }
+            else if (sscanf(msgToParse.c_str(), "%[d]%[A]%[U]%[V]%1[0-9]%[A]%[U]%[V]%1[0-9]%1[=]%[T]%[M]%[O]", sd, sA1, sU1, sV1, sname1, sA2, sU2, sV2, sname2, seq, smeters, sdot, smm) == 13)
+            {
+              int idCharM = MOOSStrFind( msgToParse , "O");
+              if (idCharM != msgToParse.size()-1)
+              {
+                reportEvent("iModem: le char 'O' n'est pas a la fin de la chaine["+msgToParse+"].\n");
               }
               distanceFounded = true;
               reportEvent("iModem: extracted range message: ["+msgToParse+"].\n");
