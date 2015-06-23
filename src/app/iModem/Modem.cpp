@@ -603,16 +603,17 @@ bool Modem::Iterate()
               reportEvent("iModem: extracted range message: ["+msgToParse+"].\n");
               m_sLastRangeStr = msgToParse;
               m_sMsgStr = "";
+              break;
             }
-            else if (msgToParse.size() >= tailleMin)
+            else if (msgToParse.size() > tailleMin)
             {
               msgToParse = msgToParse.substr(1, msgToParse.size());
             }
-            // else
-            // {
-            //   reportEvent("iModem: rien trouvé.\n");
-            // }
-            
+            else
+            {
+              break;
+              // reportEvent("iModem: rien trouvé.\n");
+            }
           }
         }
         // else
@@ -747,7 +748,7 @@ bool Modem::OnStartUp()
   char buffer[16] = {0}; //To publish "FIO=x,VALUE=y" string
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iMagnetPowerOnLabjack, 0);
   Notify("SET_FIOX_STATE",buffer);
-  //Power up modem
+  //Power down modem, they will be powered up at any reception of modem_configuration_required
   sprintf (buffer, "FIO=%d,VALUE=%d",m_iModemPowerOnLabjack, 1);
   Notify("SET_FIOX_STATE",buffer);
 
