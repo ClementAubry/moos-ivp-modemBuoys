@@ -601,6 +601,7 @@ bool Modem::Iterate()
               distanceFounded = true;
               reportEvent("iModem: extracted range message: ["+msgToParse+"].\n");
               m_sLastRangeStr = msgToParse;
+              m_sMsgStr = "";
             }
             else if (msgToParse.size() >= tailleMin)
             {
