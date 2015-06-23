@@ -318,6 +318,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           Notify("MODEM_RNG_ACK_SENT",buffer);
           reportEvent("iModem: rng ack sent.\n");
           retractRunWarning("iModem: Cannot send MODEM_ACK_RANGE, modem could be in a configuration step or serial port baddly configured\n");
+          m_sLastRangeStr="unknown";
         }
         else
           reportRunWarning("iModem: Cannot send MODEM_ACK_RANGE, modem could be in a configuration step or serial port baddly configured\n");
