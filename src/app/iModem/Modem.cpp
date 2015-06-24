@@ -583,7 +583,7 @@ bool Modem::Iterate()
         //     printf("okay\n");
         bool distanceFounded = false;
         string msgToParse = m_sMsgStr;
-        uint tailleMin = 14; //"dAUVxAUVy=z.zm"
+        uint tailleMin = 13; //"dAUVxAUVy=z.zm"
         // uint tailleMax = 18; //"dAUVxAUVy=zzz.zzzm"//pour l'instant ne sert pas
         if (msgToParse.size() >= tailleMin)
         {
