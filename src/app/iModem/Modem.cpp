@@ -192,8 +192,6 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           m_Port.Write(buffer, bs);
           reportEvent("iModem: Range message ["+string(buffer)+"] sent.\n");
           Notify("MODEM_RANGEMSG_SENT", buffer);
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_RANGEMSG_EMISSION_TIME",buffer);
           retractRunWarning("iModem: Cannot send range message, modem could be in a configuration step or serial port baddly configured\n");
         }
         else
@@ -214,8 +212,6 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           m_Port.Write(messageToSent.c_str(), messageToSent.size());
           reportEvent("iModem: Message ["+messageToSent+"] sent.\n");
           char buffer[100] = {0};
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_MSG_EMISSION_TIME",buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageToSent.c_str());
           Notify("MODEM_MESSAGE_SENT", buffer);
           retractRunWarning("iModem: Cannot send message, modem could be in a configuration step or serial port baddly configured\n");
@@ -291,8 +287,6 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           m_Port.Write(ranging.c_str(), ranging.size());
           reportEvent("iModem: Message ["+ranging+"] sent.\n");
           char buffer[100] = {0};
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_RNG_EMISSION_TIME", buffer);
           sprintf(buffer,"%s=%i",m_sRobotName.c_str(),true);
           Notify("MODEM_RNG_SENT",buffer);
           m_bInRanging = true;
@@ -316,8 +310,6 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
           m_Port.Write(m_sLastRangeStr.c_str(), m_sLastRangeStr.size());
           reportEvent("iModem: Message ["+m_sLastRangeStr+"] sent.\n");
           char buffer[100] = {0};
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_RNG_ACK_EMISSION_TIME", buffer);
           sprintf(buffer,"%s=%i",m_sRobotName.c_str(),true);
           Notify("MODEM_RNG_ACK_SENT",buffer);
           reportEvent("iModem: rng ack sent.\n");
@@ -530,8 +522,6 @@ bool Modem::Iterate()
         if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
           rangingValue = 777.777;
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_RNG_RECEPTION_TIME", buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
           Notify("MODEM_RANGING_TIMEOUT", buffer);
           reportEvent("iModem: Ranging Timeout (from modem)\n");
@@ -554,8 +544,6 @@ bool Modem::Iterate()
           {
             /************ rangingValue is a double that contain the value returned by ranging function ******************/
             // printf("ranging return [%s]******************************************************\n",meters.c_str());
-            sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-            Notify("MODEM_RNG_RECEPTION_TIME", buffer);
             sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
             Notify("MODEM_RANGING_RECEIVED", m_sRngStr);
             sprintf(buffer,"%s=%f",m_sRobotName.c_str(),rangingValue);
@@ -634,15 +622,11 @@ bool Modem::Iterate()
         // }
         if(distanceFounded)
         {
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_RANGE_MSG_RCPT_TIME", buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sLastRangeStr.c_str());
           Notify("MODEM_RANGE_MSG_RECEIVED", buffer);
         }
         else
         {
-          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-          Notify("MODEM_MSG_RECEPTION_TIME", buffer);
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
           Notify("MODEM_MESSAGE_RECEIVED", buffer);
         }
