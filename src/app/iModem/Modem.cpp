@@ -570,13 +570,8 @@ bool Modem::Iterate()
     else if (receiveMessage(messageReceived, 1))
     {
       m_sRngStr="";
-      sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
-      Notify("MODEM_MSG_RECEPTION_TIME", buffer);
       reportEvent("iModem: Receiving ["+messageReceived+"]\n");
         // MOOSTrace("iModem: Receiving [%s]\n", message.c_str());
-      sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
-      Notify("MODEM_MESSAGE_RECEIVED", buffer);
-      //now try to reconstruct the full string
       m_sMsgStr+=messageReceived;
       stripUnicode(m_sMsgStr);
       stripCRLF7F(m_sMsgStr);
@@ -586,12 +581,12 @@ bool Modem::Iterate()
         // char s[] = "&123456,&1007,&9";
         // if (sscanf(s, "%[&]%[0-9]%[,]%[&]%[0-9]%[,]%[&]%[0-9]", a, b, c, d, e, f, g, h) == 8)
         //     printf("okay\n");
+        bool distanceFounded = false;
         string msgToParse = m_sMsgStr;
         uint tailleMin = 14; //"dAUVxAUVy=z.zm"
         // uint tailleMax = 18; //"dAUVxAUVy=zzz.zzzm"//pour l'instant ne sert pas
         if (msgToParse.size() >= tailleMin)
         {
-          bool distanceFounded = false;
           char sd[2], sA1[2], sU1[2], sV1[2], sname1[20], sA2[2], sU2[2], sV2[2], sname2[20], seq[2], smeters[20], sdot[2], smm[20], sM[2];
 
           while (!distanceFounded)
@@ -637,6 +632,20 @@ bool Modem::Iterate()
         // {
         //   reportEvent("iModem: string ["+msgToParse+"] trop petite.\n");
         // }
+        if(distanceFounded)
+        {
+          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+          Notify("MODEM_RANGE_MSG_RCPT_TIME", buffer);
+          sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sLastRangeStr.c_str());
+          Notify("MODEM_RANGE_MSG_RECEIVED", buffer);
+        }
+        else
+        {
+          sprintf(buffer,"%s=%f",m_sRobotName.c_str(),MOOSTime());
+          Notify("MODEM_MSG_RECEPTION_TIME", buffer);
+          sprintf(buffer,"%s=%s",m_sRobotName.c_str(),messageReceived.c_str());
+          Notify("MODEM_MESSAGE_RECEIVED", buffer);
+        }
     }
   }
 
