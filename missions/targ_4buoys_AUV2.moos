@@ -6,17 +6,31 @@ MOOSTimeWarp = 1
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
-  //Run = uMS @ NewConsole = false
+
   Run = pLogger @ NewConsole = false
   Run = pShare @ NewConsole = false
-  Run = uTimerScript @ NewConsole = false
-
-  Run = iLabjack @ NewConsole = false
-  Run = iModem @ NewConsole = false
-
-  Run = uMACView @ NewConsole = false
   Run = pScheduler @ NewConsole = false
 
+  Run = uTimerScript @ NewConsole = false
+  Run = uMACView @ NewConsole = false
+  //Run = uMS @ NewConsole = false
+
+  //Run = iGPS @ NewConsole = false
+  Run = iLabjack @ NewConsole = false
+  Run = iModem @ NewConsole = false
+}
+ProcessConfig = iGPS
+{
+   AppTick   = 4
+   CommsTick = 4
+
+   PORT = /dev/ttyUSB1
+   BAUDRATE = 4800
+   MAX_RETRIES = 5
+   PUBLISHRAW = true
+
+   LatOrigin    = 48.418079
+   LongOrigin   = -4.472279
 }
 
 ProcessConfig=pShare
@@ -121,7 +135,7 @@ ProcessConfig = uTimerScript
   // A point when the script is reset                           
   reset_time     = 360     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
-  reset_max      = 20  // or in range [0,inf) 
+  reset_max      = 50  // or in range [0,inf) 
 }
 ProcessConfig = pLogger
 {
