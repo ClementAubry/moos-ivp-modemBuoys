@@ -7,13 +7,26 @@ Community = LAUNCHER // le nom de la communauté MOOS
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
-  Run = uMS @ NewConsole = false
-  Run = pLogger @ NewConsole = false
+  Run = uXMS @ NewConsole = false
   Run = pShare @ NewConsole = false
-  Run = uMACView @ NewConsole = false
   Run = uTimerScript @ NewConsole = false
 }
 
+ProcessConfig=uXMS
+{
+  AppTick   = 4                                                 
+  CommsTick = 4                                                 
+                                                                
+  var    = MODEM_MISSION_STARTED                
+  var    = MODEM_MISSION_START                              
+                    
+  display_all           = true   // default  
+                                                                
+  term_report_interval  = 0.6     // default (seconds) 
+                                                                
+  refresh_mode = events     // default (or streaming/paused)    
+  content_mode = scoping    // default (or history,procs) 
+}
 ProcessConfig=pShare
 {
   //a verbose way of sharing X, calling it Y and sending
@@ -42,14 +55,6 @@ ProcessConfig = pLogger
   //WildCardOmitPattern = *_ITER_LEN
   //WildCardOmitPattern = *_STATUS
   //WildCardOmitPattern = *_DEBUG
-}
-//------------------------------------------
-// uMACView
-
-ProcessConfig = uMACView
-{
-  AppTick   = 4
-  CommsTick = 4
 }
 
 ProcessConfig = uTimerScript                                    
