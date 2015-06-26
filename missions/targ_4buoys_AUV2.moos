@@ -15,7 +15,7 @@ ProcessConfig = ANTLER
   Run = uMACView @ NewConsole = false
   //Run = uMS @ NewConsole = false
 
-  //Run = iGPS @ NewConsole = false
+  Run = iGPS @ NewConsole = false
   Run = iLabjack @ NewConsole = false
   Run = iModem @ NewConsole = false
 }
@@ -135,7 +135,7 @@ ProcessConfig = uTimerScript
   // A point when the script is reset                           
   reset_time     = 360     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
-  reset_max      = 50  // or in range [0,inf) 
+  reset_max      = 10000 // or in range [0,inf) 
 }
 ProcessConfig = pLogger
 {

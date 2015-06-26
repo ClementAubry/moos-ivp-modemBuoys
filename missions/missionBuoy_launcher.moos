@@ -7,7 +7,7 @@ Community = LAUNCHER // le nom de la communauté MOOS
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
-  Run = uXMS @ NewConsole = false
+  Run = uXMS @ NewConsole = true
   Run = pShare @ NewConsole = false
   Run = uTimerScript @ NewConsole = false
 }
@@ -50,7 +50,7 @@ ProcessConfig = pLogger
 
   //LogAuxSrc = true
   WildCardLogging = true
-  WildCardPattern = MODEM_*
+  //WildCardPattern = MODEM_*
   //WildCardOmitPattern = *_ITER_GAP
   //WildCardOmitPattern = *_ITER_LEN
   //WildCardOmitPattern = *_STATUS
