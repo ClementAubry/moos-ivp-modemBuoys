@@ -32,9 +32,13 @@ ProcessConfig=pShare
   //a verbose way of sharing X, calling it Y and sending
   //on mulitcast_8
   Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
+  Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=192.168.0.100:10000
+  Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=192.168.0.101:10000
+  Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=192.168.0.102:10000
+  Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=192.168.0.103:10000
 
   //we can do this one at a time using the route directive
-  Input = route=multicast_6
+  Input = route=multicast_6&localhost:10001
 }
 ProcessConfig = pLogger
 {

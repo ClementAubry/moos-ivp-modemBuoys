@@ -36,11 +36,11 @@ ProcessConfig = iGPS
 ProcessConfig=pShare
 {
   //we can do this one at a time using the route directive
-  Input = route=multicast_8
+  Input = route=multicast_8&localhost:10000
 
   //a verbose way of sharing X, calling it Y and sending
   //on mulitcast_8
-  Output = src_name =MODEM_MISSION_STARTEDAUV2,dest_name=MODEM_MISSION_STARTEDAUV2,route=multicast_6
+  Output = src_name =MODEM_MISSION_STARTEDAUV1,dest_name=MODEM_MISSION_STARTEDAUV1,route=192.168.0.83:10001
 }
 
 ProcessConfig = pScheduler
