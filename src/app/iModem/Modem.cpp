@@ -515,7 +515,9 @@ bool Modem::Iterate()
 
       if(receiveMessage(message, 1))
       {
-        // reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
+        reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
+        sprintf(buffer,"%s=%s",m_sRobotName.c_str(),message.c_str());
+        Notify("MODEM_Ranging_MESSAGE_RECEIVED", buffer);
         m_sRngStr += message;
         stripUnicode(m_sRngStr);
         stripCRLF7F(m_sRngStr);
