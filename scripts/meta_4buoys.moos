@@ -15,7 +15,7 @@ ProcessConfig = ANTLER
   Run = uMACView @ NewConsole = false
   //Run = uMS @ NewConsole = false
 
-  Run = iGPS @ NewConsole = false
+  //Run = iGPS @ NewConsole = false
   Run = iLabjack @ NewConsole = false
   Run = iModem @ NewConsole = false
 }
