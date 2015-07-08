@@ -517,7 +517,7 @@ bool Modem::Iterate()
       {
         reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
         sprintf(buffer,"%s=%s",m_sRobotName.c_str(),message.c_str());
-        Notify("MODEM_Ranging_MESSAGE_RECEIVED", buffer);
+        Notify("MODEM_RANGING_MESSAGE_RECEIVED", buffer);
         m_sRngStr += message;
         stripUnicode(m_sRngStr);
         stripCRLF7F(m_sRngStr);
@@ -554,6 +554,12 @@ bool Modem::Iterate()
             // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
             m_bInRanging = false;
           }
+        }
+        else
+        {
+        reportEvent("iModem: Ranging mode, unable to find Range= or RangeTMO in ["+m_sRngStr+"]\n");
+        sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
+        Notify("MODEM_RNG_MSG_PARSE_ERROR", buffer);        
         }
       }   
     }
