@@ -1,7 +1,7 @@
-Community = AUV3
-ServerHost = localhost
-ServerPort = 9000
-MOOSTimeWarp = 1
+Community = $(NAME)
+ServerHost = $(SERVER_HOST)
+ServerPort = $(SERVER_PORT)
+MOOSTimeWarp = $(TIME_WARP)
 
 ProcessConfig = ANTLER
 {
@@ -40,14 +40,14 @@ ProcessConfig=pShare
 
   //a verbose way of sharing X, calling it Y and sending
   //on mulitcast_8
-  Output = src_name =MODEM_MISSION_STARTEDAUV3,dest_name=MODEM_MISSION_STARTEDAUV3,route=multicast_6
+  Output = src_name =MODEM_MISSION_STARTED$(NAME),dest_name=MODEM_MISSION_STARTED$(NAME),route=multicast_6
 }
 
 ProcessConfig = pScheduler
 {
   // generate a response to MODEM_MISSION_START.
   // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
-  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTEDAUV3 @ true
+  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTED$(NAME) @ true
 }
 
 ProcessConfig = iModem
@@ -56,7 +56,7 @@ ProcessConfig = iModem
   CommsTick = 4
   max_appcast_events = 8
 
-  ROBOT_NAME = AUV3
+  ROBOT_NAME = $(NAME)
 
   SERIAL_PORT_NAME = /dev/ttyUSB0
   BAUD_RATE_CONF = 57600
