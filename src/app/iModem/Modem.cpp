@@ -67,7 +67,7 @@ Modem::Modem()
   m_sRngStr="";
   m_sMsgStr="";
   messageReceived = "";
-  rangingValue = 0;
+  rangingValue = 7777.777;
   m_sMasterModemName="";
 
   //Configuration for Modem and magnet power supply
@@ -191,7 +191,7 @@ bool Modem::OnNewMail(MOOSMSG_LIST &NewMail)
         {
           char buffer[100] = {0};
           int bs=0;
-          if (rangingValue == 777.777)
+          if (rangingValue == 7777.777)
             bs = sprintf(buffer,"d%s%s=TMO",m_sRobotName.c_str(),m_sMasterModemName.c_str());
           else
             bs = sprintf(buffer,"d%s%s=%3.3fm",m_sRobotName.c_str(),m_sMasterModemName.c_str(),rangingValue);
@@ -519,7 +519,6 @@ bool Modem::Iterate()
       m_sLastRangeStr="";
       messageReceived="";
 
-      if(receiveMessage(message, 1))
       {
         reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
         sprintf(buffer,"%s=%s",m_sRobotName.c_str(),message.c_str());
@@ -531,7 +530,7 @@ bool Modem::Iterate()
         stripCRLF(m_sRngStr);
         if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
-          rangingValue = 777.777;
+          rangingValue = 7777.777;
           sprintf(buffer,"%s=%s",m_sRobotName.c_str(),m_sRngStr.c_str());
           Notify("MODEM_RANGING_TIMEOUT", buffer);
           reportEvent("iModem: Ranging Timeout (from modem)\n");
@@ -544,9 +543,9 @@ bool Modem::Iterate()
           reportEvent("iModem: m_sRngStr.compare(0,6,\"Range=\") == 0 && m_sRngStr.size() >= 10");
           unsigned int foundM = m_sRngStr.find_last_of('m');
           string meters = m_sRngStr.substr (0,foundM);
-          char fundMStr[5]={0};
-          sprintf(fundMStr,"%d",foundM);
-          reportEvent("iModem:  METERS extracted = "+meters+", foundM = "+fundMStr+"\n");
+          // char fundMStr[5]={0};
+          // sprintf(fundMStr,"%d",foundM);
+          // reportEvent("iModem:  METERS extracted = "+meters+", foundM = "+fundMStr+"\n");
 
           if(!MOOSValFromString(rangingValue, meters, "Range"))
             reportRunWarning(meters + ": Unable to find correct string");
