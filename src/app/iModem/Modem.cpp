@@ -26,7 +26,7 @@ void stripCRLF7F(string & mystring)
 {
   mystring.erase( std::remove(mystring.begin(), mystring.end(), '\r'), mystring.end() );
   mystring.erase( std::remove(mystring.begin(), mystring.end(), '\n'), mystring.end() );
-  mystring.erase( std::remove(mystring.begin(), mystring.end(), 0x7F), mystring.end() );
+  // mystring.erase( std::remove(mystring.begin(), mystring.end(), 0x7F), mystring.end() );
 }
 
 //---------------------------------------------------------
@@ -517,10 +517,11 @@ bool Modem::Iterate()
       {
         reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
         sprintf(buffer,"%s=%s",m_sRobotName.c_str(),message.c_str());
-        Notify("MODEM_RANGING_MESSAGE_RECEIVED", buffer);
+        Notify("MODEM_RANGING_BUFFER_RECEIVED", buffer);
+        Notify("MODEM_RANGING_MESSAGE_RECEIVED", message.c_str());
         m_sRngStr += message;
-        stripUnicode(m_sRngStr);
-        stripCRLF7F(m_sRngStr);
+        // stripUnicode(m_sRngStr);
+        // stripCRLF7F(m_sRngStr);
         if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
           rangingValue = 777.777;
@@ -552,6 +553,7 @@ bool Modem::Iterate()
             Notify("MODEM_RANGING_VALUE", buffer);
             reportEvent("iModem: Ranging received = "+m_sRngStr+"\n");
             // MOOSTrace("iModem: Ranging received = [%s]\n", m_sRngStr.c_str());
+            m_sRngStr="";
             m_bInRanging = false;
           }
         }
