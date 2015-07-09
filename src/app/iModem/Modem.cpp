@@ -22,11 +22,17 @@ void stripUnicode(string & str)
 {
   str.erase(remove_if(str.begin(),str.end(), invalidChar), str.end());
 }
+void stripCRLF(string & mystring)
+{
+  mystring.erase( std::remove(mystring.begin(), mystring.end(), '\r'), mystring.end() );
+  mystring.erase( std::remove(mystring.begin(), mystring.end(), '\n'), mystring.end() );
+}
+
 void stripCRLF7F(string & mystring)
 {
   mystring.erase( std::remove(mystring.begin(), mystring.end(), '\r'), mystring.end() );
   mystring.erase( std::remove(mystring.begin(), mystring.end(), '\n'), mystring.end() );
-  // mystring.erase( std::remove(mystring.begin(), mystring.end(), 0x7F), mystring.end() );
+  mystring.erase( std::remove(mystring.begin(), mystring.end(), 0x7F), mystring.end() );
 }
 
 //---------------------------------------------------------
@@ -522,6 +528,7 @@ bool Modem::Iterate()
         m_sRngStr += message;
         // stripUnicode(m_sRngStr);
         // stripCRLF7F(m_sRngStr);
+        stripCRLF(m_sRngStr);
         if (m_sRngStr.compare(0,8,"RangeTMO") == 0)
         {
           rangingValue = 777.777;
