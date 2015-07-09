@@ -87,21 +87,43 @@ ProcessConfig = uTimerScript
   delay_reset    = 0                                            
   // Seconds added to each event time, on first pass only       
   delay_start    = 0
-  // Event(s) are the key components of the script              
-  event          = var=SET_FIOX_STATE, val="FIO=0,VALUE=1", time=0
-  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=20
-  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=40
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=60
-  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=80
-  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=100
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=120 
-  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=140
-  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=160
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=180 
+  // Event(s) are the key components of the script
 
+  //Set modem configuration        
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave,AUV3=slave,AUV4=slave", time=0
+
+  //Tell modems to send a message, just to see if rng that follow will send us Range=0.0m
+  event          = var=MODEM_SEND_MESSAGE, val="AUV2=A2sl", time=15
+  event          = var=MODEM_SEND_MESSAGE, val="AUV3=A3sl", time=15
+  event          = var=MODEM_SEND_MESSAGE, val="AUV4=A4sl", time=15
+  event          = var=MODEM_SEND_MESSAGE, val="AUV1=helo", time=20
+
+  //Start comm and ranging (3*rng with 15sec between each) 
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=25
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=40
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=55
+
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=70 //10 sec comm
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=80 
+
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=90
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=105
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=120
+
+
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=135
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=145
+
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=155
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=170
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=185
+
+
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=200
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=210 
 
   // A point when the script is reset                           
-  reset_time     = 200     // or {all-posted} or range (0,inf)
+  reset_time     = 220     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
   reset_max      = 10000 // or in range [0,inf) 
 }
