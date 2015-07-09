@@ -518,7 +518,7 @@ bool Modem::Iterate()
       m_sMsgStr="";
       m_sLastRangeStr="";
       messageReceived="";
-
+      if(receiveMessage(message, 1))
       {
         reportEvent("iModem: Ranging mode, receiving ["+message+"]\n");
         sprintf(buffer,"%s=%s",m_sRobotName.c_str(),message.c_str());
