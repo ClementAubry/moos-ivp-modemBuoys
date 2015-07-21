@@ -15,7 +15,7 @@ ProcessConfig = ANTLER
   Run = uMACView @ NewConsole = false
   //Run = uMS @ NewConsole = false
 
-  //Run = iGPS @ NewConsole = false
+  Run = iGPS @ NewConsole = false
   Run = iLabjack @ NewConsole = false
   Run = iModem @ NewConsole = false
 }
@@ -87,43 +87,65 @@ ProcessConfig = uTimerScript
   delay_reset    = 0                                            
   // Seconds added to each event time, on first pass only       
   delay_start    = 0
-  // Event(s) are the key components of the script
+  // Event(s) are the key components of the script              
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave,AUV3=slave,AUV4=slave", time=0//12s config
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=12 //4s for ranging
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=16 //4s for ranging
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=20 // 10s for comm
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=30 // 10s for comm 
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=40 //4s for ranging
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=44 //4s for ranging
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=48 // 10s for comm
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=58 // 10s for comm 
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=68 //4s for ranging
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=72 //4s for ranging
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=76 // 10s for comm
+  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=86 // 10s for comm 
 
-  //Set modem configuration        
-  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=master,AUV2=slave,AUV3=slave,AUV4=slave", time=0
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=master,AUV3=slave,AUV4=slave", time=96
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=108
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=112
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=116
+  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=126
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=136
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=140
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=144
+  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=154
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=164
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=168
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=172
+  event          = var=MODEM_ACK_RANGE, val="AUV2=1", time=182
 
-  //Tell modems to send a message, just to see if rng that follow will send us Range=0.0m
-  event          = var=MODEM_SEND_MESSAGE, val="AUV2=A2sl", time=15
-  event          = var=MODEM_SEND_MESSAGE, val="AUV3=A3sl", time=15
-  event          = var=MODEM_SEND_MESSAGE, val="AUV4=A4sl", time=15
-  event          = var=MODEM_SEND_MESSAGE, val="AUV1=helo", time=20
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=slave,AUV3=master,AUV4=slave", time=192
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=204
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=208
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=212
+  event          = var=MODEM_ACK_RANGE, val="AUV3=1", time=222
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=232
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=236
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=240
+  event          = var=MODEM_ACK_RANGE, val="AUV3=1", time=250
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=260
+  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=264
+  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=268
+  event          = var=MODEM_ACK_RANGE, val="AUV3=1", time=278
 
-  //Start comm and ranging (3*rng with 15sec between each) 
-  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=25
-  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=40
-  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=55
-
-  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=70 //10 sec comm
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=80 
-
-  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=90
-  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=105
-  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=120
-
-
-  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=135
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=145
-
-  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=155
-  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=170
-  event          = var=MODEM_SEND_RNG, val="AUV4=1", time=185
-
-
-  event          = var=MODEM_SEND_RANGE, val="AUV4=1", time=200
-  event          = var=MODEM_ACK_RANGE, val="AUV1=1", time=210 
+  event          = var=MODEM_CONFIGURATION_REQUIRED, val="AUV1=slave,AUV2=slave,AUV3=slave,AUV4=master", time=288
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=300
+  event          = var=MODEM_SEND_RNG, val="AUV1=1", time=304
+  event          = var=MODEM_SEND_RANGE, val="AUV1=1", time=308
+  event          = var=MODEM_ACK_RANGE, val="AUV4=1", time=318
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=328
+  event          = var=MODEM_SEND_RNG, val="AUV2=1", time=332
+  event          = var=MODEM_SEND_RANGE, val="AUV2=1", time=336
+  event          = var=MODEM_ACK_RANGE, val="AUV4=1", time=346
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=356
+  event          = var=MODEM_SEND_RNG, val="AUV3=1", time=360
+  event          = var=MODEM_SEND_RANGE, val="AUV3=1", time=364
+  event          = var=MODEM_ACK_RANGE, val="AUV4=1", time=374
 
   // A point when the script is reset                           
-  reset_time     = 220     // or {all-posted} or range (0,inf)
+  reset_time     = 384     // or {all-posted} or range (0,inf)
   // Maximum number of resets allowed                           
   reset_max      = 10000 // or in range [0,inf) 
 }

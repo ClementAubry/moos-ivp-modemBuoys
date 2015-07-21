@@ -50,7 +50,7 @@ for ((i=1; i<=$NB_BUOY; i++)); do
       SERVER_HOST=$SERVER_HOST \
       SERVER_PORT=$SERVER_PORT \
       TIME_WARP=$TIME_WARP "
-  nsplug meta_$[NB_BUOY]buoysMsgBefore3Rng.moos targ_$[NB_BUOY]buoys_AUV$i.moos -f ${PARAMETERS}
+  nsplug meta_$[NB_BUOY]buoys.moos targ_$[NB_BUOY]buoys_AUV$i.moos -f ${PARAMETERS}
 done
 
 
