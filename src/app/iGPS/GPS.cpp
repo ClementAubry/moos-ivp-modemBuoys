@@ -1,12 +1,13 @@
 /************************************************************/
-/*    NAME: Mohamed Saad IBN SEDDIK                                              */
-/*    ORGN: MIT                                             */
-/*    FILE: GPS.cpp                                        */
-/*    DATE:                                                 */
+/*    FILE: GPS.cpp
+/*    ORGN: ENSTA Bretagne
+/*    AUTH: Clement Aubry (from MSIS iGPS app)
+/*    DATE: 2015
 /************************************************************/
 
 #include <iterator>
 #include "MBUtils.h"
+#include "ACTable.h"
 #include "GPS.h"
 
 using namespace std;
@@ -18,13 +19,21 @@ GPS::GPS()
 {
   m_iterations = 0;
   m_timewarp   = 1;
-}
+  m_portName = "/dev/ttyUSB0";
+  m_baudrate = 4800;
+  m_bPublishRaw = true;
 
-//---------------------------------------------------------
-// Destructor
-
-GPS::~GPS()
-{
+  m_dSpeed = 0;
+  m_dHeading = 0;
+  m_dYaw = 0;
+  m_dN = 0;
+  m_dE = 0;
+  m_dX = 0;
+  m_dY = 0;
+  m_dLongitude = 0;
+  m_dLatitude = 0;
+  m_dNbSat = 0;
+  m_dAltitude = 0;
 }
 
 //---------------------------------------------------------
@@ -32,25 +41,32 @@ GPS::~GPS()
 
 bool GPS::OnNewMail(MOOSMSG_LIST &NewMail)
 {
-//   MOOSMSG_LIST::iterator p;
-   
-//   for(p=NewMail.begin(); p!=NewMail.end(); p++) {
-//     CMOOSMsg &msg = *p;
+  AppCastingMOOSApp::OnNewMail(NewMail);
 
-// #if 0 // Keep these around just for template
-//     string key   = msg.GetKey();
-//     string comm  = msg.GetCommunity();
-//     double dval  = msg.GetDouble();
-//     string sval  = msg.GetString(); 
-//     string msrc  = msg.GetSource();
-//     double mtime = msg.GetTime();
-//     bool   mdbl  = msg.IsDouble();
-//     bool   mstr  = msg.IsString();
-// #endif
-//    }
-	
-   // return(true);
-   return UpdateMOOSVariables(NewMail);
+  MOOSMSG_LIST::iterator p;
+  for(p = NewMail.begin() ; p != NewMail.end() ; p++)
+  {
+    CMOOSMsg &msg = *p;
+    string key    = msg.GetKey();
+
+    #if 0 // Keep these around just for template
+      string comm  = msg.GetCommunity();
+      double dval  = msg.GetDouble();
+      string sval  = msg.GetString(); 
+      string msrc  = msg.GetSource();
+      double mtime = msg.GetTime();
+      bool   mdbl  = msg.IsDouble();
+      bool   mstr  = msg.IsString();
+    #endif
+
+    if(key == "FOO") 
+      cout << "great!";
+
+    else if(key != "APPCAST_REQ") // handle by AppCastingMOOSApp
+      reportRunWarning("Unhandled Mail: " + key);
+  }
+
+  return(true);
 }
 
 //---------------------------------------------------------
@@ -58,13 +74,8 @@ bool GPS::OnNewMail(MOOSMSG_LIST &NewMail)
 
 bool GPS::OnConnectToServer()
 {
-   // register for variables here
-   // possibly look at the mission file?
-   // m_MissionReader.GetConfigurationParam("Name", <string>);
-   // m_Comms.Register("VARNAME", 0);
-	
-   RegisterVariables();
-   return(true);
+  registerVariables();
+  return true;
 }
 
 //---------------------------------------------------------
@@ -73,12 +84,13 @@ bool GPS::OnConnectToServer()
 
 bool GPS::Iterate()
 {
-  m_iterations++; 
+  AppCastingMOOSApp::Iterate();
 
-  if(GetData())
-    PublishData();
+  m_iterations++;
+  GetData();
 
-  return(true);
+  AppCastingMOOSApp::PostReport();
+  return true;
 }
 
 //---------------------------------------------------------
@@ -87,90 +99,129 @@ bool GPS::Iterate()
 
 bool GPS::OnStartUp()
 {
-  CMOOSInstrument::OnStartUp();
+  AppCastingMOOSApp::OnStartUp();
 
   double dLatOrigin;
   if (!m_MissionReader.GetValue("LatOrigin",dLatOrigin))
   {
-    MOOSTrace("LatOrigin not set!!!");
+    reportConfigWarning("LatOrigin not set!!!");
     return false;
   }
 
   double dLongOrigin;
   if (!m_MissionReader.GetValue("LongOrigin",dLongOrigin))
   {
-    MOOSTrace("LangOrigin not set!!!");
+    reportConfigWarning("LongOrigin not set!!!");
+    // MOOSTrace("LongOrigin not set!!!");
     return false;
   }
 
   if (!m_Geodesy.Initialise(dLatOrigin,dLongOrigin))
   {
-    MOOSTrace("Geodesy initialisation failed!!!");
+    // MOOSTrace("Geodesy initialisation failed!!!");
+    reportConfigWarning("Geodesy initialisation failed!!!");
     return false;
   }
   
   int max_retries = 5;
   double dGPSPeriod = 1.0;
 
-  list<string> sParams;
+  STRING_LIST sParams;
   m_MissionReader.EnableVerbatimQuoting(false);
-  if(m_MissionReader.GetConfiguration(GetAppName(), sParams)) {
-    list<string>::iterator p;
-    for(p=sParams.begin(); p!=sParams.end(); p++) {
-      string original_line = *p;
-      string param = stripBlankEnds(toupper(biteString(*p, '=')));
-      string value = stripBlankEnds(*p);
-      
-      if(param == "GPS_PERIOD") {
-        dGPSPeriod = atof(value.c_str());
-      }
-      else if(param == "MAX_RETRIES") {
-        max_retries = atoi(value.c_str());
-      }
+  if(!m_MissionReader.GetConfiguration(GetAppName(), sParams))
+    reportConfigWarning("No config block found for " + GetAppName());
+
+  STRING_LIST::iterator p;
+  sParams.reverse();
+  for(p = sParams.begin() ; p != sParams.end() ; p++)
+  {
+    string orig  = *p;
+    string line  = *p;
+    string param = toupper(biteStringX(line, '='));
+    string value = line;
+    bool handled = false;
+
+    if(param == "MAX_RETRIES")
+    {
+      max_retries = atoi(value.c_str());
+      handled = true;
     }
+    else if(param == "PORT")
+    {
+      // reportEvent("iModem: Using "+value+" serial port\n");
+      m_portName = value;
+      handled = true;
+    }
+    else if(param == "BAUDRATE")
+    {
+      // reportEvent("iModem: serial port baud rate conf setted to "+value+"\n");
+      m_baudrate = atoi(value.c_str());
+      handled = true;
+    }
+    else if(param == "PUBLISH_RAW")
+    {
+      // reportEvent("iModem: serial port baud rate conf setted to "+value+"\n");
+      m_bPublishRaw = MOOSStrCmp(value.c_str(),"TRUE");
+      handled = true;
+    }
+
+    if(!handled)
+      reportUnhandledConfigWarning(orig);
   }
-  
+
   m_timewarp = GetMOOSTimeWarp();
 
-  AddMOOSVariable("X", "", "GPS_X", dGPSPeriod);
-  AddMOOSVariable("Y", "", "GPS_Y", dGPSPeriod);
-  AddMOOSVariable("N", "", "GPS_N", dGPSPeriod);
-  AddMOOSVariable("E", "", "GPS_E", dGPSPeriod);
-  AddMOOSVariable("Raw", "", "GPS_RAW", dGPSPeriod);
-  AddMOOSVariable("Longitude", "", "GPS_LONG", dGPSPeriod);
-  AddMOOSVariable("Latitude", "", "GPS_LAT", dGPSPeriod);
-  AddMOOSVariable("Satellites", "", "GPS_SATS", dGPSPeriod);
-  AddMOOSVariable("Altitude", "", "GPS_ALTITUDE", dGPSPeriod);
-  AddMOOSVariable("Speed", "", "GPS_SPEED", dGPSPeriod);
-  AddMOOSVariable("Heading", "", "GPS_HEADING", dGPSPeriod);
-  AddMOOSVariable("Yaw", "", "GPS_YAW", dGPSPeriod);
+  bool portOpened = m_Port.Create(m_portName.c_str(), m_baudrate);
+  m_Port.Flush();
 
-
-
-
-  RegisterMOOSVariables();
-  RegisterVariables();
-
-
-  if (!SetupPort()) 
-  {
-    return false;
-  }
-  if (!(InitialiseSensorN(max_retries,"GPS")))
-  {
-    return false;
-  }
-  return(true);
+  registerVariables();
+  return true;
 }
 
 //---------------------------------------------------------
-// Procedure: RegisterVariables
+// Procedure: registerVariables
 
-void GPS::RegisterVariables()
+void GPS::registerVariables()
 {
-  // m_Comms.Register("FOOBAR", 0);
+  AppCastingMOOSApp::RegisterVariables();
+  // Register("FOOBAR", 0);
 }
 
+//------------------------------------------------------------
+// Procedure: buildReport()
+
+bool GPS::buildReport() 
+{
+  #if 0 // Keep these around just for template
+    m_msgs << "============================================ \n";
+    m_msgs << "File:                                        \n";
+    m_msgs << "============================================ \n";
+
+    ACTable actab(4);
+    actab << "Alpha | Bravo | Charlie | Delta";
+    actab.addHeaderLines();
+    actab << "one" << "two" << "three" << "four";
+    m_msgs << actab.getFormattedString();
+  #endif
+    m_msgs << "==============================================================\n";
+    m_msgs << "iGPS Status :                                                \n";
+    m_msgs << "==============================================================\n";
+
+    ACTable actab(6);
+    actab << "Time | Speed | Heading | Yaw | N | E ";
+    actab.addHeaderLines();
+    actab << m_dGpsTime << m_dSpeed << m_dHeading << m_dYaw << m_dN << m_dE;
+    m_msgs << actab.getFormattedString();
+    m_msgs << "\n==============================================================\n";
+
+ACTable actab2(6);
+    actab2 << "Nb Sat | Latitude | Longitude | Altitude | X | Y ";
+    actab2.addHeaderLines();
+    actab2 << m_dNbSat << m_dLatitude << m_dLongitude << m_dAltitude << m_dX << m_dY;
+    m_msgs << actab2.getFormattedString();
+
+  return true;
+}
 bool GPS::InitialiseSensor()
 {
   MOOSPause(1000);
@@ -197,26 +248,25 @@ bool GPS::GetData()
       return false;
     }
   }
-  if (PublishRaw())
+  if (m_bPublishRaw)
   {
-    SetMOOSVar("Raw",sMessage,MOOSTime());
+    // SetMOOSVar("Raw",sMessage,MOOSTime());
+    Notify("GPS_RAW",sMessage);
   }
 
   return ParseNMEAString(sMessage);
 }
 
-bool GPS::PublishData()
-{
-  return PublishFreshMOOSVariables();
-}
-
 bool GPS::ParseNMEAString(string &sNMEAString)
 {
-  if(!DoNMEACheckSum(sNMEAString))
+  if(!CMOOSInstrument::DoNMEACheckSum(sNMEAString))
   {
-    MOOSDebugWrite("GPS NMEA checksum failed!");
+    // MOOSDebugWrite("GPS NMEA checksum failed!");
+      reportRunWarning("GPS NMEA checksum failed!");
     return false;
   }
+  else
+    retractRunWarning("GPS NMEA checksum failed!");
   string sCopy = sNMEAString;
   string sHeader = MOOSChomp(sNMEAString,",");
   bool bQuality = true;
@@ -226,6 +276,9 @@ bool GPS::ParseNMEAString(string &sNMEAString)
     double dTimeMOOS = MOOSTime();
     // will only be used for speed and heading!
     string sTmp = MOOSChomp(sNMEAString,","); //UTC
+    double dTime = atof(sTmp.c_str());
+    m_dGpsTime = dTime;
+    Notify("GPS_TIME",dTime);
     sTmp = MOOSChomp(sNMEAString, ","); // Validity
     if (sTmp == "V")
       bQuality = false;
@@ -243,13 +296,19 @@ bool GPS::ParseNMEAString(string &sNMEAString)
     if (bQuality)
     {
       dSpeed = Knots2MPS(dSpeed);
-      SetMOOSVar("Speed",dSpeed,dTimeMOOS);
+      // SetMOOSVar("Speed",dSpeed,dTimeMOOS);
+      Notify("GPS_SPEED",dSpeed);
+      m_dSpeed = dSpeed;
       
       while(dHeading > 180) dHeading -= 360;
       while(dHeading < -180) dHeading += 360;
       double dYaw = -dHeading*M_PI/180.0;
-      SetMOOSVar("Heading",dHeading,dTimeMOOS);
-      SetMOOSVar("Yaw",dYaw,dTimeMOOS);
+      // SetMOOSVar("Heading",dHeading,dTimeMOOS);
+      Notify("GPS_HEADING",dHeading);
+      m_dHeading= dHeading;
+      // SetMOOSVar("Yaw",dYaw,dTimeMOOS);
+      Notify("GPS_YAW",dYaw);
+      m_dYaw = dYaw;
     }
 
 
@@ -260,15 +319,18 @@ bool GPS::ParseNMEAString(string &sNMEAString)
 
     // First time
     double dTime = atof(sTmp.c_str());
-
+    m_dGpsTime = dTime;
+    Notify("GPS_TIME",dTime);
     // then Latitude
     sTmp = MOOSChomp(sNMEAString, ",");
     if (sTmp.size() == 0)
     {
       bQuality = false;
-      MOOSTrace("NMEA message received with no Latitude.");
+      // MOOSTrace("NMEA message received with no Latitude.");
+      reportRunWarning("NMEA message received with no Latitude.");
       return false;
     } else {
+      retractRunWarning("NMEA message received with no Latitude.");
       dLat = atof(sTmp.c_str());
       sTmp = MOOSChomp(sNMEAString, ",");
       string sNS = sTmp;
@@ -281,9 +343,11 @@ bool GPS::ParseNMEAString(string &sNMEAString)
     if (sTmp.size() == 0)
     {
       bQuality = false;
-      MOOSTrace("NMEA message received with no Longitude.");
+      // MOOSTrace("NMEA message received with no Longitude.");
+      reportRunWarning("NMEA message received with no Longitude.");
       return false;
     } else {
+      retractRunWarning("NMEA message received with no Longitude.");
       dLong = atof(sTmp.c_str());
       sTmp = MOOSChomp(sNMEAString, ",");
       string sEW = sTmp;
@@ -335,22 +399,38 @@ bool GPS::ParseNMEAString(string &sNMEAString)
       {
         if (bQuality)
         {
-          SetMOOSVar("N",dNLocal,dTimeMOOS);
-          SetMOOSVar("E",dELocal,dTimeMOOS);
+          // SetMOOSVar("N",dNLocal,dTimeMOOS);
+          Notify("GPS_N",dNLocal);
+          m_dN = dNLocal;
+          // SetMOOSVar("E",dELocal,dTimeMOOS);
+          Notify("GPS_E",dELocal);
+          m_dE = dELocal;
         }
       }
       if (m_Geodesy.LatLong2LocalUTM(dLat,dLong,dYLocal,dXLocal))
       {
         if (bQuality)
         {
-          SetMOOSVar("X",dXLocal,dTimeMOOS);
-          SetMOOSVar("Y",dYLocal,dTimeMOOS);
+          // SetMOOSVar("X",dXLocal,dTimeMOOS);
+          Notify("GPS_X",dXLocal);
+          m_dX = dXLocal;
+          // SetMOOSVar("Y",dYLocal,dTimeMOOS);
+          Notify("GPS_Y",dYLocal);
+          m_dY = dYLocal;
         }
       }
-      SetMOOSVar("Longitude",dLong,dTimeMOOS);
-      SetMOOSVar("Latitude",dLat,dTimeMOOS);
-      SetMOOSVar("Satellites",iSatellites,dTimeMOOS);
-      SetMOOSVar("Altitude",dAltitude,dTimeMOOS);
+      // SetMOOSVar("Longitude",dLong,dTimeMOOS);
+      Notify("GPS_LONGITUDE",dLong);
+      m_dLongitude = dLong;
+      // SetMOOSVar("Latitude",dLat,dTimeMOOS);
+      Notify("GPS_LATITUDE",dLat);
+      m_dLatitude = dLat;
+      // SetMOOSVar("Satellites",iSatellites,dTimeMOOS);
+      Notify("GPS_NB_SAT",iSatellites);
+      m_dNbSat = iSatellites;
+      // SetMOOSVar("Altitude",dAltitude,dTimeMOOS);
+      Notify("GPS_ALTITUDE",dAltitude);
+      m_dAltitude = dAltitude;
     }
   }
   return true;

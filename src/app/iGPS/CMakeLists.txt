@@ -1,24 +1,21 @@
 #--------------------------------------------------------
-# The CMakeLists.txt for:                       iGPS
-# Author(s):                              Mohamed Saad IBN SEDDIK
+# The CMakeLists.txt for: iGPS
+# ENSTA Bretagne
+# Author(s): Clément Aubry from MSIS
 #--------------------------------------------------------
-
-# FILE(GLOB SRC *.cpp)
 
 SET(SRC
   GPS.cpp
-  GPS_Info.cpp
   main.cpp
 )
-
-
 
 ADD_EXECUTABLE(iGPS ${SRC})
 
 TARGET_LINK_LIBRARIES(iGPS
    ${MOOS_LIBRARIES}
    ${MOOSGeodesy_LIBRARIES}
+   ensta-documentation
+   apputil
    mbutil
    m
    pthread)
-

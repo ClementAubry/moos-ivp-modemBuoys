@@ -1,0 +1,27 @@
+Community = alpha // le nom de la communauté MOOS
+
+ServerHost = localhost // l’adresse du serveur
+ServerPort = 9000 // le port de la communauté
+
+LatOrigin    = 48.418079
+LongOrigin   = -4.472279
+
+ProcessConfig = ANTLER
+{
+  Run = MOOSDB  @ NewConsole = false
+  Run = uMS @ NewConsole = false
+
+  Run = iGPSAppCast @ NewConsole = true
+
+}
+
+ProcessConfig = iGPSAppCast
+{
+	AppTick   = 4
+	CommsTick = 4
+
+	PORT = /dev/ttyUSB0
+	BAUDRATE = 4800
+	MAX_RETRIES = 5
+	PUBLISH_RAW = true
+}
