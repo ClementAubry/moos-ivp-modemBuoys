@@ -30,7 +30,7 @@ ProcessConfig=uXMS
 ProcessConfig=pShare
 {
   //a verbose way of sharing X, calling it Y and sending
-  //on mulitcast_8
+  //on mulitcast_8&localhost:10042
   Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
 
   //we can do this one at a time using the route directive
