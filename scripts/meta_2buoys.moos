@@ -3,6 +3,9 @@ ServerHost = $(SERVER_HOST)
 ServerPort = $(SERVER_PORT)
 MOOSTimeWarp = $(TIME_WARP)
 
+LatOrigin    = 48.418079
+LongOrigin   = -4.472279
+
 ProcessConfig = ANTLER
 {
   Run = MOOSDB  @ NewConsole = false
@@ -21,16 +24,13 @@ ProcessConfig = ANTLER
 }
 ProcessConfig = iGPS
 {
-   AppTick   = 4
-   CommsTick = 4
+  AppTick   = 4
+  CommsTick = 4
 
-   PORT = /dev/ttyUSB1
-   BAUDRATE = 4800
-   MAX_RETRIES = 5
-   PUBLISHRAW = true
-
-   LatOrigin    = 48.418079
-   LongOrigin   = -4.472279
+  PORT = /dev/ttyUSB1
+  BAUDRATE = 4800
+  MAX_RETRIES = 5
+  PUBLISH_RAW = true
 }
 
 ProcessConfig=pShare

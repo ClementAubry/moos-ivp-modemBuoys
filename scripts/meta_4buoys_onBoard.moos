@@ -1,7 +1,11 @@
-Community = AUV4
-ServerHost = localhost
-ServerPort = 9000
-MOOSTimeWarp = 1
+Community = $(NAME)
+ServerHost = $(SERVER_HOST)
+ServerPort = $(SERVER_PORT)
+
+MOOSTimeWarp = $(TIME_WARP)
+
+LatOrigin    = 48.418079
+LongOrigin   = -4.472279
 
 ProcessConfig = ANTLER
 {
@@ -13,7 +17,7 @@ ProcessConfig = ANTLER
 
   Run = uTimerScript @ NewConsole = false
   Run = uMACView @ NewConsole = false
-  //Run = uMS @ NewConsole = false
+  Run = uMS @ NewConsole = false
 
   Run = iGPS @ NewConsole = false
   Run = iLabjack @ NewConsole = false
@@ -21,33 +25,28 @@ ProcessConfig = ANTLER
 }
 ProcessConfig = iGPS
 {
-   AppTick   = 4
-   CommsTick = 4
+  AppTick   = 4
+  CommsTick = 4
 
-   PORT = /dev/ttyUSB1
-   BAUDRATE = 4800
-   MAX_RETRIES = 5
-   PUBLISHRAW = true
-
-   LatOrigin    = 48.418079
-   LongOrigin   = -4.472279
+  PORT = /dev/ttyUSB1
+  BAUDRATE = 4800
+  MAX_RETRIES = 5
+  PUBLISH_RAW = true
 }
 
 ProcessConfig=pShare
 {
   //we can do this one at a time using the route directive
-  Input = route=multicast_8
+  Input = route=multicast_6
 
-  //a verbose way of sharing X, calling it Y and sending
-  //on mulitcast_8
-  Output = src_name =MODEM_MISSION_STARTEDAUV4,dest_name=MODEM_MISSION_STARTEDAUV4,route=multicast_6
+  Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
 }
 
 ProcessConfig = pScheduler
 {
   // generate a response to MODEM_MISSION_START.
   // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
-  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTEDAUV4 @ true
+  RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTED$(NAME) @ true
 }
 
 ProcessConfig = iModem
@@ -56,7 +55,7 @@ ProcessConfig = iModem
   CommsTick = 4
   max_appcast_events = 8
 
-  ROBOT_NAME = AUV4
+  ROBOT_NAME = $(NAME)
 
   SERIAL_PORT_NAME = /dev/ttyUSB0
   BAUD_RATE_CONF = 57600
