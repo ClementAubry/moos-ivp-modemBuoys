@@ -40,6 +40,7 @@ ProcessConfig=pShare
   Input = route=multicast_6
 
   Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
+  Output = src_name =MODEM_STOP_ALIM,dest_name=MODEM_STOP_ALIM,route=multicast_8
 }
 
 ProcessConfig = pScheduler

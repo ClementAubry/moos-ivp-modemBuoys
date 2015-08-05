@@ -81,7 +81,8 @@ ProcessConfig = uTimerScript
   CommsTick = 4 
 
   // If true script is paused upon launch                       
-  //paused         = true                                                              
+  //paused         = true         
+  reset_var      = MODEM_MISSION_START = false                                                      
   // Logic condition that must be met for script to be unpaused 
   condition      = MODEM_MISSION_START = true
   // Seconds added to each event time, on each script pass      
