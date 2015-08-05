@@ -74,14 +74,14 @@ bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
         reportRunWarning(msg.GetKey() + ": Unable to find 'channel' parameter");
       else if(!MOOSValFromString(valueToSet, msg.GetString(), "VALUE"))
         reportRunWarning(msg.GetKey() + ": Unable to find 'value' parameter");
-      sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, m_iFioState[fioToSet]);
-      retractRunWarning(buffer);
-      sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, m_iFioState[fioToSet]);
-      retractRunWarning(buffer);
+      // sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, m_iFioState[fioToSet]);
+      // retractRunWarning(buffer);
+      // sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, m_iFioState[fioToSet]);
+      // retractEvent(buffer);
       if (valueToSet >= 0 && valueToSet <=1 && fioToSet >= 0 && fioToSet <= 7)
       {
         sprintf (buffer, "iLabjack: Calling eDO to setFIO%d state to %d",fioToSet, valueToSet);
-        reportRunWarning(buffer);
+        reportEvent(buffer);
           //long eDO( DeviceHandle,ForceConfigIO?,ChannelNumber,State)
         if( (error = eDO(hDevice, 1, fioToSet, valueToSet)) != 0 )
         {
@@ -91,7 +91,7 @@ bool Labjack::OnNewMail(MOOSMSG_LIST &NewMail)
         else
         {
           sprintf (buffer, "iLabjack: FIO%d correctly setted to %d",fioToSet, valueToSet);
-          reportRunWarning(buffer);
+          reportEvent(buffer);
           m_iFioState[fioToSet] = valueToSet;
           Notify("FIOX_STATE", msg.GetString());
         }
