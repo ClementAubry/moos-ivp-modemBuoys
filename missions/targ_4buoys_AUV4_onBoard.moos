@@ -40,6 +40,7 @@ ProcessConfig=pShare
   Input = route=multicast_6
 
   Output = src_name =MODEM_MISSION_START,dest_name=MODEM_MISSION_START,route=multicast_8
+  Output = src_name =MODEM_MISSION_RESTART,dest_name=MODEM_MISSION_RESTART,route=multicast_8
   Output = src_name =MODEM_STOP_ALIM,dest_name=MODEM_STOP_ALIM,route=multicast_8
 }
 
@@ -48,6 +49,7 @@ ProcessConfig = pScheduler
   // generate a response to MODEM_MISSION_START.
   // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
   RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTEDAUV4 @ true
+  RESPONSE = MODEM_MISSION_RESTART : MODEM_MISSION_RESTARTEDAUV4 @ true
 }
 
 ProcessConfig = iModem
@@ -81,7 +83,7 @@ ProcessConfig = uTimerScript
 
   // If true script is paused upon launch                       
   //paused         = true          
-  reset_var      = MODEM_MISSION_START                                                 
+  reset_var      = MODEM_MISSION_RESTART                                                 
   // Logic condition that must be met for script to be unpaused 
   condition      = MODEM_MISSION_START = true
   // Seconds added to each event time, on each script pass      

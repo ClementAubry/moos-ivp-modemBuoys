@@ -49,6 +49,7 @@ ProcessConfig = pScheduler
   // generate a response to MODEM_MISSION_START.
   // The variable MODEM_MISSION_STARTED takes on string value $(Community_name)
   RESPONSE = MODEM_MISSION_START : MODEM_MISSION_STARTED$(NAME) @ true
+  RESPONSE = MODEM_MISSION_RESTART : MODEM_MISSION_RESTARTED$(NAME) @ true
 }
 
 ProcessConfig = iModem
@@ -82,7 +83,7 @@ ProcessConfig = uTimerScript
 
   // If true script is paused upon launch                       
   //paused         = true         
-  reset_var      = MODEM_MISSION_START                                                     
+  reset_var      = MODEM_MISSION_RESTART                                                     
   // Logic condition that must be met for script to be unpaused 
   condition      = MODEM_MISSION_START = true
   // Seconds added to each event time, on each script pass      
